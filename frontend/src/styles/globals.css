@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bbb-dark: #0a0a0f;
+  --bbb-card: #12121a;
+  --bbb-border: #1e1e2e;
+  --bbb-gold: #FFD700;
+  --bbb-purple: #7c3aed;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background-color: var(--bbb-dark);
+  color: #e5e7eb;
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  scrollbar-width: thin;
+  scrollbar-color: #2d2d3d transparent;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2d2d3d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3d3d5d; }
+
+@layer components {
+  .card {
+    @apply bg-bbb-card border border-bbb-border rounded-2xl;
+  }
+
+  .btn-primary {
+    @apply bg-bbb-purple hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-xl
+           transition-all duration-200 flex items-center gap-2 justify-center
+           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+  }
+
+  .btn-gold {
+    @apply bg-bbb-gold hover:bg-yellow-500 text-black font-bold px-6 py-3 rounded-xl
+           transition-all duration-200 flex items-center gap-2 justify-center
+           active:scale-95 shadow-lg shadow-yellow-500/20;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl
+           transition-all duration-200 flex items-center gap-2 justify-center active:scale-95;
+  }
+
+  .btn-outline {
+    @apply border border-bbb-border hover:border-purple-500 text-gray-300 hover:text-white
+           font-semibold px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 justify-center;
+  }
+
+  .input {
+    @apply w-full bg-bbb-dark border border-bbb-border text-white rounded-xl px-4 py-3
+           focus:outline-none focus:border-bbb-purple placeholder-gray-600
+           transition-colors duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .avatar {
+    @apply rounded-full object-cover border-2;
+  }
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(18, 18, 26, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Gold glow */
+.gold-glow {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 60px rgba(255, 215, 0, 0.1);
+}
+
+/* Purple glow */
+.purple-glow {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), 0 0 60px rgba(124, 58, 237, 0.1);
+}
+
+/* Animated gradient background */
+.gradient-bg {
+  background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #0f0f1a 100%);
+}
+
+/* Chat message animations */
+.message-enter {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Paredão spotlight */
+.spotlight {
+  background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+}
+
+/* Scrollable chat area */
+.chat-area {
+  scrollbar-width: thin;
+  scrollbar-color: #2d2d3d transparent;
+  scroll-behavior: smooth;
+}
