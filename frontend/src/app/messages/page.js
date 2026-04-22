@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import { useStore } from '@/lib/store';
@@ -29,6 +29,14 @@ function formatTime(ts) {
 }
 
 export default function MessagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <MessagesContent />
+    </Suspense>
+  );
+}
+
+function MessagesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token, user } = useStore();
