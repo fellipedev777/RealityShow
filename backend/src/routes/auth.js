@@ -14,6 +14,17 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
     }
 
+    // Block registrations after game has started
+    const { data: gameStartedRow } = await supabase
+      .from('game_state')
+      .select('value')
+      .eq('key', 'game_started')
+      .single();
+
+    if (gameStartedRow?.value === 'true') {
+      return res.status(403).json({ error: 'game_started' });
+    }
+
     const { data: existing } = await supabase
       .from('users')
       .select('id')

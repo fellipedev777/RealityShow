@@ -37,7 +37,12 @@ export default function LoginPage() {
       if (typeof window !== 'undefined') localStorage.setItem('bbb_user', JSON.stringify(user));
       router.push('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao entrar. Tente novamente.');
+      const errCode = err.response?.data?.error;
+      if (errCode === 'game_started') {
+        setError('As inscrições estão encerradas. O reality já começou!');
+      } else {
+        setError(errCode || 'Erro ao entrar. Tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
