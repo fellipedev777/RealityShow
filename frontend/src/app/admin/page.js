@@ -233,7 +233,7 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="text-xl font-black text-white">Painel do Administrador</h1>
-              <p className="text-sm text-gray-400">Controle total do BBB Zap · Semana {gameState?.current_week || 1}</p>
+              <p className="text-sm text-gray-400">Controle total do LiveReality · Semana {gameState?.current_week || 1}</p>
             </div>
           </div>
           {feedback && (
@@ -273,7 +273,7 @@ export default function AdminPage() {
               </div>
 
               {!gameStarted && (
-                <ActionButton icon={Play} label="🎬 Iniciar BBB Zap" color="btn-gold" onClick={handleStartGame} loading={loading.start} />
+                <ActionButton icon={Play} label="🎬 Iniciar LiveReality" color="btn-gold" onClick={handleStartGame} loading={loading.start} />
               )}
 
               {gameStarted && (

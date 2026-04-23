@@ -83,8 +83,8 @@ export default function VotarPage() {
           <div className="w-8 h-8 bg-bbb-gold rounded-lg flex items-center justify-center">
             <Tv className="w-4 h-4 text-black" />
           </div>
-          <span className="text-bbb-gold">BBB</span>
-          <span className="text-white">Zap</span>
+          <span className="text-bbb-gold">Live</span>
+          <span className="text-white">Reality</span>
         </div>
         <span className="badge bg-red-500/20 text-red-400 border border-red-500/30 text-xs">
           🗳️ Votação Pública
@@ -250,7 +250,7 @@ export default function VotarPage() {
             </div>
           )}
 
-          <p className="text-center text-gray-600 text-xs">BBB Zap · 1 voto por dispositivo por semana</p>
+          <p className="text-center text-gray-600 text-xs">LiveReality · 1 voto por dispositivo por semana</p>
         </div>
       </div>
     </div>

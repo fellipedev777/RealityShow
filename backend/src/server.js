@@ -54,7 +54,7 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/public', require('./routes/public'));
 
 // Health check
-app.get('/health', (req, res) => res.json({ status: 'ok', service: 'BBB Zap API', timestamp: new Date().toISOString() }));
+app.get('/health', (req, res) => res.json({ status: 'ok', service: 'LiveReality API', timestamp: new Date().toISOString() }));
 
 // 404
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada' }));
@@ -76,7 +76,7 @@ scheduler.start();
 
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
-  console.log(`\n🏠 BBB Zap API running on port ${PORT}`);
+  console.log(`\n🏠 LiveReality API running on port ${PORT}`);
   console.log(`📡 WebSocket server ready`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}\n`);
 });

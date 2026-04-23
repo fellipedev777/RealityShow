@@ -1,4 +1,4 @@
--- BBB Zap - Complete Database Schema
+-- LiveReality - Complete Database Schema
 -- Run this on Supabase SQL Editor
 
 -- Enable UUID extension

@@ -1,11 +1,11 @@
 import '@/styles/globals.css';
 
 export const metadata = {
-  title: 'BBB Zap - Reality Show Online',
+  title: 'LiveReality - Reality Show Online',
   description: 'Jogue o Big Brother Brasil online em tempo real com seus amigos!',
   icons: { icon: '/favicon.ico' },
   openGraph: {
-    title: 'BBB Zap',
+    title: 'LiveReality',
     description: 'Reality show online e em tempo real',
     type: 'website'
   }

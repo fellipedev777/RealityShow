@@ -53,7 +53,7 @@ export default function DashboardPage() {
                   Bem-vindo, {user?.name?.split(' ')[0]}! 👋
                 </h1>
                 <p className="text-gray-400 mt-1">
-                  Semana <strong className="text-bbb-gold">{week}</strong> · BBB Zap ao vivo
+                  Semana <strong className="text-bbb-gold">{week}</strong> · LiveReality ao vivo
                 </p>
               </div>
               <div className="flex items-center gap-2">

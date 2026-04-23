@@ -1,7 +1,7 @@
 {
-  "name": "bbb-zap-backend",
+  "name": "live-reality-backend",
   "version": "1.0.0",
-  "description": "BBB Zap - Reality Show Online Backend",
+  "description": "LiveReality - Reality Show Online Backend",
   "main": "src/server.js",
   "engines": {
     "node": ">=18.0.0"

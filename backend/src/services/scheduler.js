@@ -63,7 +63,7 @@ const start = () => {
         id: Date.now().toString(),
         content: `🎬 ${event.title} começa agora! ${event.description}`,
         type: 'info',
-        from: 'BBB Zap',
+        from: 'LiveReality',
         created_at: new Date().toISOString()
       });
     }
@@ -98,7 +98,7 @@ const start = () => {
     const totalWeeks = parseInt(totalWeeksRow?.value) || 10;
 
     if (currentWeek >= totalWeeks) {
-      if (io) io.emit('game_finale', { message: 'O BBB Zap chega à sua grande final!' });
+      if (io) io.emit('game_finale', { message: 'O LiveReality chega à sua grande final!' });
       return;
     }
 
@@ -115,7 +115,7 @@ const start = () => {
     if (io) io.emit('new_week', { week: currentWeek + 1 });
   });
 
-  console.log('[Scheduler] BBB Zap scheduler started');
+  console.log('[Scheduler] LiveReality scheduler started');
 };
 
 module.exports = { start, setIO };

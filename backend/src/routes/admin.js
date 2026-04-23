@@ -260,9 +260,9 @@ router.post('/eliminate', auth, adminOnly, async (req, res) => {
       .single();
 
     const speeches = [
-      `${user?.name}, sua jornada no BBB Zap chegou ao fim! O público decidiu e você deixa a casa com muito mais experiência. Obrigado por tudo!`,
+      `${user?.name}, sua jornada no LiveReality chegou ao fim! O público decidiu e você deixa a casa com muito mais experiência. Obrigado por tudo!`,
       `A casa perdeu um participante incrível! ${user?.name}, você jogou com garra e personalidade. Até mais!`,
-      `${user?.name}, você deixou sua marca na história do BBB Zap! Foi uma jornada emocionante. A vida fora da casa te aguarda!`,
+      `${user?.name}, você deixou sua marca na história do LiveReality! Foi uma jornada emocionante. A vida fora da casa te aguarda!`,
       `É a hora da despedida! ${user?.name}, o público votou e decidiu encerrar sua participação. Que venham novos desafios!`
     ];
 

@@ -49,7 +49,7 @@ export function useSocket() {
       showElimination({ name: data.name, speech: data.speech });
       addAnnouncement({
         id: Date.now().toString(),
-        content: `❌ ${data.name} foi eliminado(a) do BBB Zap!`,
+        content: `❌ ${data.name} foi eliminado(a) do LiveReality!`,
         type: 'elimination',
         created_at: new Date().toISOString()
       });

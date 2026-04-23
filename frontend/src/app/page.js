@@ -63,7 +63,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-5xl font-black text-white mb-1">
-            BBB <span className="text-bbb-gold">Zap</span>
+            Live<span className="text-bbb-gold">Reality</span>
           </h1>
           <p className="text-gray-400 text-sm">Reality Show Online em Tempo Real</p>
           <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500">
@@ -179,7 +179,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-gray-600 text-xs mt-6">
-          BBB Zap — Reality Show Online © 2024
+          LiveReality — Reality Show Online © 2024
         </p>
       </div>
     </div>

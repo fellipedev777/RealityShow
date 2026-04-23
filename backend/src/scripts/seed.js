@@ -9,7 +9,7 @@ async function seed() {
 
   const { data, error } = await supabase.from('users').upsert({
     name: 'Administrador',
-    email: process.env.ADMIN_EMAIL || 'admin@bbbzap.com',
+    email: process.env.ADMIN_EMAIL || 'admin@livereality.com',
     password_hash,
     is_admin: true,
     is_active: true

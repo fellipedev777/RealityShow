@@ -1,5 +1,5 @@
 {
-  "name": "bbbzap",
+  "name": "livereality",
   "version": "1.0.0",
   "scripts": {
     "build": "npm install --prefix backend",
