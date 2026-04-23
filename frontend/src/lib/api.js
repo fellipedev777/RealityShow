@@ -11,7 +11,7 @@ const api = axios.create({
 // Request interceptor - add JWT
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('bbb_token');
+    const token = localStorage.getItem('lr_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -22,8 +22,8 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('bbb_token');
-      localStorage.removeItem('bbb_user');
+      localStorage.removeItem('lr_token');
+      localStorage.removeItem('lr_user');
       window.location.href = '/';
     }
     return Promise.reject(err);

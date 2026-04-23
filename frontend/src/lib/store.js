@@ -8,13 +8,13 @@ export const useStore = create((set, get) => ({
   setUser: (user) => set({ user }),
   updateUser: (patch) => set(s => ({ user: s.user ? { ...s.user, ...patch } : s.user })),
   setToken: (token) => {
-    if (typeof window !== 'undefined') localStorage.setItem('bbb_token', token);
+    if (typeof window !== 'undefined') localStorage.setItem('lr_token', token);
     set({ token });
   },
   logout: () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('bbb_token');
-      localStorage.removeItem('bbb_user');
+      localStorage.removeItem('lr_token');
+      localStorage.removeItem('lr_user');
     }
     set({ user: null, token: null, gameState: null });
   },

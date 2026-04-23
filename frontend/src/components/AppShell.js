@@ -24,8 +24,8 @@ export default function AppShell({ children }) {
   // Auth guard
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const storedToken = localStorage.getItem('bbb_token');
-    const storedUser = localStorage.getItem('bbb_user');
+    const storedToken = localStorage.getItem('lr_token');
+    const storedUser = localStorage.getItem('lr_user');
     if (!storedToken) {
       router.push('/');
       return;

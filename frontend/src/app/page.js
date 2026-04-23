@@ -34,7 +34,7 @@ export default function LoginPage() {
       const { user, token } = res.data;
       setUser(user);
       setToken(token);
-      if (typeof window !== 'undefined') localStorage.setItem('bbb_user', JSON.stringify(user));
+      if (typeof window !== 'undefined') localStorage.setItem('lr_user', JSON.stringify(user));
       router.push('/dashboard');
     } catch (err) {
       const errCode = err.response?.data?.error;
