@@ -46,10 +46,6 @@ export default function AdminPage() {
   const [publicResults, setPublicResults] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [totalWeeks, setTotalWeeks] = useState('');
-  const [formsSheetUrl, setFormsSheetUrl] = useState('');
-  const [formsVoteColumn, setFormsVoteColumn] = useState('2');
-  const [formsImportResult, setFormsImportResult] = useState(null);
-  const [formsResults, setFormsResults] = useState(null);
   const socket = getSocket();
 
   useEffect(() => {
@@ -213,16 +209,6 @@ export default function AdminPage() {
     updateGameState('total_weeks', n);
   };
 
-  const handleImportFormsVotes = async () => {
-    const res = await action('forms_import', () => adminAPI.importFormsVotes(formsSheetUrl, parseInt(formsVoteColumn) || 2), '');
-    if (res?.data) setFormsImportResult(res.data);
-  };
-
-  const handleLoadFormsResults = async () => {
-    const res = await action('forms_results', () => adminAPI.formsVotesResults(), '');
-    if (res?.data) setFormsResults(res.data);
-  };
-
   const handleNextWeek = async () => {
     if (!confirm('Avançar para próxima semana?')) return;
     const res = await action('next_week', () => adminAPI.nextWeek(), '📅 Nova semana iniciada!');
@@ -371,68 +357,6 @@ export default function AdminPage() {
                       </div>
                       <div className="h-1.5 bg-bbb-border rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full" style={{ width: `${r.percentage}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            {/* Google Forms Integration */}
-            <div className="card p-4 space-y-3 border-green-500/20">
-              <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                <Link className="w-4 h-4 text-green-400" /> Votos via Google Forms
-              </h2>
-              <div className="bg-bbb-dark rounded-xl p-3 text-xs text-gray-400 space-y-1 leading-relaxed">
-                <p className="font-semibold text-gray-300">Como configurar:</p>
-                <p>1. Na planilha de respostas: <span className="text-white">Arquivo → Compartilhar → Publicar na Web</span></p>
-                <p>2. Selecione <span className="text-white">Planilha inteira</span> e formato <span className="text-white">CSV</span> → Publicar</p>
-                <p>3. Copie o link gerado e cole abaixo</p>
-              </div>
-              <input
-                type="url"
-                value={formsSheetUrl}
-                onChange={e => setFormsSheetUrl(e.target.value)}
-                placeholder="https://docs.google.com/spreadsheets/d/..."
-                className="input text-xs"
-              />
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-500 whitespace-nowrap">Coluna do voto:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formsVoteColumn}
-                  onChange={e => setFormsVoteColumn(e.target.value)}
-                  className="input w-16 text-center"
-                  title="Número da coluna onde estão os nomes votados (2 = segunda coluna, após o Timestamp)"
-                />
-                <span className="text-xs text-gray-600">(padrão: 2)</span>
-              </div>
-              <ActionButton
-                icon={RefreshCw} label="Sincronizar Votos do Forms" color="btn-primary"
-                onClick={handleImportFormsVotes} loading={loading.forms_import}
-                disabled={!formsSheetUrl.trim()}
-              />
-              <ActionButton
-                icon={RefreshCw} label="Ver Resultado Forms" color="btn-outline"
-                onClick={handleLoadFormsResults} loading={loading.forms_results}
-              />
-              {formsImportResult && (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-xs text-green-400">
-                  ✅ {formsImportResult.imported} votos importados · {formsImportResult.skipped} ignorados · Semana {formsImportResult.week_number}
-                </div>
-              )}
-              {formsResults && formsResults.results?.length > 0 && (
-                <div className="bg-bbb-dark rounded-xl p-3 space-y-2">
-                  <p className="text-xs text-gray-500 font-semibold">Placar Forms — {formsResults.total} votos:</p>
-                  {formsResults.results.map((r, i) => (
-                    <div key={i} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-300">{r.user?.name}</span>
-                        <span className="font-bold text-white">{r.count} · {r.percentage}%</span>
-                      </div>
-                      <div className="h-1.5 bg-bbb-border rounded-full overflow-hidden">
-                        <div className="h-full bg-green-500 rounded-full" style={{ width: `${r.percentage}%` }} />
                       </div>
                     </div>
                   ))}
