@@ -5,8 +5,8 @@ import { initSocket, disconnectSocket, getSocket } from '@/lib/socket';
 import { useStore } from '@/lib/store';
 
 export function useSocket() {
-  const { token, setGameState, updateGameState, addAnnouncement, setActiveProva,
-          setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination } = useStore();
+  const { token, user, setGameState, updateGameState, addAnnouncement, setActiveProva,
+          setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination, updateUser } = useStore();
   const listenersSet = useRef(false);
 
   useEffect(() => {
@@ -46,7 +46,10 @@ export function useSocket() {
     });
 
     socket.on('participant_eliminated', (data) => {
-      showElimination({ name: data.name, speech: data.speech });
+      showElimination({ name: data.name, speech: data.speech, isMe: data.user_id === user?.id });
+      if (data.user_id === user?.id) {
+        updateUser({ is_eliminated: true });
+      }
       addAnnouncement({
         id: Date.now().toString(),
         content: `❌ ${data.name} foi eliminado(a) do LiveReality!`,

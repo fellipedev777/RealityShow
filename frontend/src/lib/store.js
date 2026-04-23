@@ -6,6 +6,7 @@ export const useStore = create((set, get) => ({
   token: null,
 
   setUser: (user) => set({ user }),
+  updateUser: (patch) => set(s => ({ user: s.user ? { ...s.user, ...patch } : s.user })),
   setToken: (token) => {
     if (typeof window !== 'undefined') localStorage.setItem('bbb_token', token);
     set({ token });

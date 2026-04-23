@@ -83,6 +83,30 @@ export default function AppShell({ children }) {
   const votacaoActive = gameState?.votacao_active === true || gameState?.votacao_active === 'true';
   const sinceracaoActive = gameState?.sincerao_active === true || gameState?.sincerao_active === 'true';
 
+  // Block eliminated users
+  if (user?.is_eliminated) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center space-y-6">
+          <div className="text-7xl">🚪</div>
+          <div>
+            <p className="text-red-400 text-sm font-semibold uppercase tracking-widest mb-2">Você foi eliminado(a)</p>
+            <h1 className="text-3xl font-black text-white mb-1">{user.name}</h1>
+            <p className="text-gray-400 text-sm">Sua participação nesta temporada chegou ao fim.</p>
+          </div>
+          <div className="card p-5 border-red-500/20 bg-red-500/5">
+            <p className="text-gray-300 text-sm leading-relaxed">
+              Obrigado por participar do LiveReality! Você pode assistir ao restante da temporada, mas não tem mais acesso à casa.
+            </p>
+          </div>
+          <button onClick={handleLogout} className="btn-outline px-6 py-2 text-sm">
+            <LogOut className="w-4 h-4 mr-2 inline" /> Sair
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Elimination Modal */}
@@ -91,7 +115,9 @@ export default function AppShell({ children }) {
           <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">
             <div className="text-6xl mb-2">🚪</div>
             <div>
-              <p className="text-red-400 text-sm font-semibold uppercase tracking-widest mb-2">Eliminado(a)</p>
+              <p className="text-red-400 text-sm font-semibold uppercase tracking-widest mb-2">
+                {eliminationModal.isMe ? 'Você foi eliminado(a)' : 'Eliminado(a)'}
+              </p>
               <h1 className="text-4xl font-black text-white">{eliminationModal.name}</h1>
             </div>
             <div className="card p-6 border-red-500/20 bg-red-500/5 text-left">
@@ -101,7 +127,7 @@ export default function AppShell({ children }) {
               onClick={closeElimination}
               className="btn-danger px-8 py-3 text-base mx-auto"
             >
-              Fechar
+              {eliminationModal.isMe ? 'Entendido' : 'Fechar'}
             </button>
           </div>
         </div>
