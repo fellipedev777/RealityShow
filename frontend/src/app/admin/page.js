@@ -9,7 +9,7 @@ import { getSocket } from '@/lib/socket';
 import {
   Settings, Play, Vote, Mic2, Shield, AlertTriangle,
   Crown, Star, Users, ChevronRight, Check, X, RefreshCw,
-  Bell, Trophy, Zap, SkipForward, UserX, Globe, Copy, Link
+  Bell, Trophy, Zap, SkipForward, UserX, Globe, Copy, Link, Calendar
 } from 'lucide-react';
 
 function ActionButton({ icon: Icon, label, color = 'btn-primary', onClick, loading, disabled, badge }) {
@@ -44,6 +44,7 @@ export default function AdminPage() {
   const [voteResults, setVoteResults] = useState(null);
   const [publicResults, setPublicResults] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [totalWeeks, setTotalWeeks] = useState('');
   const socket = getSocket();
 
   useEffect(() => {
@@ -51,6 +52,10 @@ export default function AdminPage() {
     if (!user?.is_admin) { router.push('/dashboard'); return; }
     participantsAPI.list().then(r => setParticipants(r.data.participants)).catch(() => {});
   }, [token, user]);
+
+  useEffect(() => {
+    if (gameState?.total_weeks) setTotalWeeks(String(gameState.total_weeks));
+  }, [gameState?.total_weeks]);
 
   const setLoad = (key, val) => setLoading(l => ({ ...l, [key]: val }));
   const showFeedback = (msg) => { setFeedback(msg); setTimeout(() => setFeedback(''), 3000); };
@@ -195,6 +200,13 @@ export default function AdminPage() {
     setTimeout(() => setLinkCopied(false), 2000);
   };
 
+  const handleSetTotalWeeks = async () => {
+    const n = parseInt(totalWeeks);
+    if (!n || n < 1) return;
+    await action('total_weeks', () => adminAPI.updateState('total_weeks', String(n)), `📅 Duração definida: ${n} semanas!`);
+    updateGameState('total_weeks', n);
+  };
+
   const handleNextWeek = async () => {
     if (!confirm('Avançar para próxima semana?')) return;
     const res = await action('next_week', () => adminAPI.nextWeek(), '📅 Nova semana iniciada!');
@@ -236,6 +248,27 @@ export default function AdminPage() {
               <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
                 <Play className="w-4 h-4 text-green-400" /> Controle do Jogo
               </h2>
+
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Duração do jogo
+                  {gameState?.total_weeks && <span className="ml-2 text-bbb-gold">· atual: {gameState.total_weeks} semanas</span>}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="52"
+                    value={totalWeeks}
+                    onChange={e => setTotalWeeks(e.target.value)}
+                    placeholder="Ex: 10"
+                    className="input flex-1"
+                  />
+                  <button onClick={handleSetTotalWeeks} disabled={!totalWeeks} className="btn-gold px-3">
+                    <Check className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
 
               {!gameStarted && (
                 <ActionButton icon={Play} label="🎬 Iniciar BBB Zap" color="btn-gold" onClick={handleStartGame} loading={loading.start} />
@@ -506,7 +539,7 @@ export default function AdminPage() {
               <h2 className="font-bold text-sm text-gray-300 mb-3 uppercase tracking-wider">Estado do Jogo</h2>
               <div className="space-y-2 text-sm">
                 {[
-                  { label: 'Semana', value: gameState?.current_week || 1 },
+                  { label: 'Semana', value: `${gameState?.current_week || 1} / ${gameState?.total_weeks || '?'}` },
                   { label: 'Jogo Iniciado', value: gameStarted ? '✅ Sim' : '❌ Não' },
                   { label: 'Votação', value: votacaoActive ? '🟢 Aberta' : '🔴 Fechada' },
                   { label: 'Sincerão', value: sinceracaoActive ? '🟢 Ativo' : '🔴 Fechado' },

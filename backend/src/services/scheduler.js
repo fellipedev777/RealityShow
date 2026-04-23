@@ -93,7 +93,11 @@ const start = () => {
       .from('game_state').select('value').eq('key', 'current_week').single();
     const currentWeek = parseInt(weekRow?.value) || 1;
 
-    if (currentWeek >= 6) {
+    const { data: totalWeeksRow } = await supabase
+      .from('game_state').select('value').eq('key', 'total_weeks').single();
+    const totalWeeks = parseInt(totalWeeksRow?.value) || 10;
+
+    if (currentWeek >= totalWeeks) {
       if (io) io.emit('game_finale', { message: 'O BBB Zap chega à sua grande final!' });
       return;
     }
