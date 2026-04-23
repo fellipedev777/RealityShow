@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [selectedAngel, setSelectedAngel] = useState('');
   const [selectedImmune, setSelectedImmune] = useState('');
   const [selectedEliminate, setSelectedEliminate] = useState('');
+  const [eliminationSpeech, setEliminationSpeech] = useState('');
   const [selectedMoveUser, setSelectedMoveUser] = useState('');
   const [selectedMoveRoom, setSelectedMoveRoom] = useState('');
   const [provaType, setProvaType] = useState('lider');
@@ -149,11 +150,12 @@ export default function AdminPage() {
   const handleEliminate = async () => {
     if (!selectedEliminate) return;
     if (!confirm('Confirmar eliminação? Esta ação é irreversível!')) return;
-    const res = await action('eliminate', () => adminAPI.eliminate(selectedEliminate), '❌ Participante eliminado!');
+    const res = await action('eliminate', () => adminAPI.eliminate(selectedEliminate, eliminationSpeech.trim() || null), '❌ Participante eliminado!');
     if (res?.data) {
       const { speech, eliminated } = res.data;
       emit('elimination', { user_id: selectedEliminate, name: eliminated, speech });
       setSelectedEliminate('');
+      setEliminationSpeech('');
     }
   };
 
@@ -524,6 +526,21 @@ export default function AdminPage() {
                 <option value="">Selecionar participante...</option>
                 {activeParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Discurso de eliminação <span className="text-gray-600">(opcional — deixe vazio para gerar automaticamente)</span></label>
+                <textarea
+                  value={eliminationSpeech}
+                  onChange={e => setEliminationSpeech(e.target.value)}
+                  placeholder={selectedEliminate ? `Escreva o discurso para ${activeParticipants.find(p => p.id === selectedEliminate)?.name || ''}...` : 'Selecione um participante primeiro...'}
+                  rows={3}
+                  maxLength={400}
+                  disabled={!selectedEliminate}
+                  className="input resize-none text-sm"
+                />
+                {eliminationSpeech && (
+                  <p className="text-xs text-gray-600 mt-1 text-right">{eliminationSpeech.length}/400</p>
+                )}
+              </div>
               <button
                 onClick={handleEliminate}
                 disabled={!selectedEliminate || loading.eliminate}

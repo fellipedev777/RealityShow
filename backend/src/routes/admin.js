@@ -250,7 +250,7 @@ router.post('/close-votacao', auth, adminOnly, async (req, res) => {
 // POST /api/admin/eliminate - Eliminate participant
 router.post('/eliminate', auth, adminOnly, async (req, res) => {
   try {
-    const { user_id } = req.body;
+    const { user_id, speech: customSpeech } = req.body;
 
     const { data: user } = await supabase
       .from('users')
@@ -266,7 +266,7 @@ router.post('/eliminate', auth, adminOnly, async (req, res) => {
       `É a hora da despedida! ${user?.name}, o público votou e decidiu encerrar sua participação. Que venham novos desafios!`
     ];
 
-    const speech = speeches[Math.floor(Math.random() * speeches.length)];
+    const speech = (customSpeech && customSpeech.trim()) ? customSpeech.trim() : speeches[Math.floor(Math.random() * speeches.length)];
 
     // Move eliminated to main room
     const { data: mainRoom } = await supabase

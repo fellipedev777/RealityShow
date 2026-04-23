@@ -92,7 +92,7 @@ export const adminAPI = {
   closeSincerao: () => api.post('/admin/close-sincerao'),
   openVotacao: () => api.post('/admin/open-votacao'),
   closeVotacao: () => api.post('/admin/close-votacao'),
-  eliminate: (user_id) => api.post('/admin/eliminate', { user_id }),
+  eliminate: (user_id, speech = null) => api.post('/admin/eliminate', { user_id, speech }),
   nextWeek: () => api.post('/admin/next-week'),
   dashboard: () => api.get('/admin/dashboard'),
   openPublicVoting: () => api.post('/admin/open-public-voting'),
