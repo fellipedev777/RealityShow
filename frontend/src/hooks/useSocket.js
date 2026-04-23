@@ -6,7 +6,7 @@ import { useStore } from '@/lib/store';
 
 export function useSocket() {
   const { token, setGameState, updateGameState, addAnnouncement, setActiveProva,
-          setCurrentQuestion, setProvaScores, setParedaoUsers } = useStore();
+          setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination } = useStore();
   const listenersSet = useRef(false);
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export function useSocket() {
     });
 
     socket.on('participant_eliminated', (data) => {
+      showElimination({ name: data.name, speech: data.speech });
       addAnnouncement({
         id: Date.now().toString(),
         content: `❌ ${data.name} foi eliminado(a) do BBB Zap!`,

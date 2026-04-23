@@ -15,7 +15,7 @@ import {
 export default function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants } = useStore();
+  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination } = useStore();
   const socket = useSocket();
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -85,6 +85,27 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Elimination Modal */}
+      {eliminationModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{background: 'rgba(0,0,0,0.92)'}}>
+          <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">
+            <div className="text-6xl mb-2">🚪</div>
+            <div>
+              <p className="text-red-400 text-sm font-semibold uppercase tracking-widest mb-2">Eliminado(a)</p>
+              <h1 className="text-4xl font-black text-white">{eliminationModal.name}</h1>
+            </div>
+            <div className="card p-6 border-red-500/20 bg-red-500/5 text-left">
+              <p className="text-gray-200 text-base leading-relaxed italic">"{eliminationModal.speech}"</p>
+            </div>
+            <button
+              onClick={closeElimination}
+              className="btn-danger px-8 py-3 text-base mx-auto"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
       {/* Top Bar */}
       <header className="glass border-b border-bbb-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">

@@ -52,6 +52,11 @@ export const useStore = create((set, get) => ({
   paredaoUsers: [],
   setParedaoUsers: (users) => set({ paredaoUsers: users }),
 
+  // Elimination modal
+  eliminationModal: null,
+  showElimination: (data) => set({ eliminationModal: data }),
+  closeElimination: () => set({ eliminationModal: null }),
+
   // Sincrôneo
   sincerao: null,
   setSincerao: (s) => set({ sincerao: s }),
