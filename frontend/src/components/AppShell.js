@@ -137,8 +137,8 @@ export default function AppShell({ children }) {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2 font-black text-xl">
-            <span className="text-bbb-gold">BBB</span>
-            <span className="text-white">Zap</span>
+            <span className="text-white">Live</span>
+            <span className="text-bbb-gold">Reality</span>
             <span className="badge bg-bbb-purple/20 text-bbb-purple text-xs ml-1">Sem {week}</span>
           </Link>
 
