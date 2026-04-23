@@ -13,7 +13,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3000',
-  'https://bbbzap.vercel.app'
+  'https://reality-show-alpha.vercel.app'
 ];
 
 const io = new Server(server, {
