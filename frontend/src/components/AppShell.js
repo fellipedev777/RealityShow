@@ -229,17 +229,24 @@ export default function AppShell({ children }) {
 
       {/* Mobile Bottom Nav */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 glass border-t border-bbb-border z-50">
-        <div className="flex justify-around py-2">
-          {nav.slice(0, 5).map(({ href, label, icon: Icon }) => (
+        <div className="flex justify-around py-1">
+          {nav.map(({ href, label, icon: Icon, badge }) => (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-xs transition-all ${
+              className={`relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-xs transition-all ${
                 isActive(href) ? 'text-bbb-gold' : 'text-gray-500'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span>{label}</span>
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {badge > 0 && (
+                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold" style={{fontSize: '9px'}}>
+                    {badge > 9 ? '9+' : badge}
+                  </span>
+                )}
+              </div>
+              <span className="truncate max-w-[40px] text-center" style={{fontSize: '10px'}}>{label}</span>
             </Link>
           ))}
         </div>

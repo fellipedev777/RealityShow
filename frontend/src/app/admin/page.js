@@ -229,7 +229,7 @@ export default function AdminPage() {
           )}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Column 1 - Game control */}
           <div className="space-y-4">
             <div className="card p-4 space-y-3">
