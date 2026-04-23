@@ -335,6 +335,101 @@ router.post('/next-week', auth, adminOnly, async (req, res) => {
   }
 });
 
+// POST /admin/import-forms-votes - Import votes from Google Forms via Sheets CSV
+router.post('/import-forms-votes', auth, adminOnly, async (req, res) => {
+  try {
+    const { sheet_url } = req.body;
+    if (!sheet_url) return res.status(400).json({ error: 'URL da planilha é obrigatória' });
+
+    const match = sheet_url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return res.status(400).json({ error: 'URL inválida. Use o link do Google Sheets.' });
+
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`;
+
+    let csvText;
+    try {
+      const response = await fetch(csvUrl);
+      if (!response.ok) return res.status(400).json({ error: 'Planilha não acessível. Deixe-a pública (qualquer pessoa com o link pode ver).' });
+      csvText = await response.text();
+    } catch {
+      return res.status(400).json({ error: 'Não foi possível acessar a planilha.' });
+    }
+
+    const lines = csvText.split('\n').slice(1).filter(l => l.trim());
+
+    const { data: stateRow } = await supabase.from('game_state').select('value').eq('key', 'current_week').single();
+    const week_number = parseInt(stateRow?.value) || 1;
+
+    const { data: participants } = await supabase.from('users').select('id, name')
+      .eq('is_active', true).eq('is_eliminated', false).eq('is_admin', false);
+
+    const counts = {};
+    let skipped = 0;
+
+    for (const line of lines) {
+      const cols = [];
+      let cur = '', inQ = false;
+      for (const ch of line) {
+        if (ch === '"') inQ = !inQ;
+        else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      cols.push(cur.trim());
+
+      const votedName = cols[1]?.replace(/^"|"$/g, '').trim();
+      if (!votedName) { skipped++; continue; }
+
+      const p = participants?.find(p =>
+        p.name.toLowerCase() === votedName.toLowerCase() ||
+        p.name.toLowerCase().includes(votedName.toLowerCase()) ||
+        votedName.toLowerCase().includes(p.name.toLowerCase())
+      );
+
+      if (p) counts[p.id] = (counts[p.id] || 0) + 1;
+      else skipped++;
+    }
+
+    await supabase.from('game_state').upsert(
+      { key: `forms_votes_week_${week_number}`, value: JSON.stringify(counts) },
+      { onConflict: 'key' }
+    );
+
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    return res.json({ success: true, imported: total, skipped, week_number });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// GET /admin/forms-votes-results - Get imported Forms vote results
+router.get('/forms-votes-results', auth, adminOnly, async (req, res) => {
+  try {
+    const { data: stateRow } = await supabase.from('game_state').select('value').eq('key', 'current_week').single();
+    const week_number = parseInt(stateRow?.value) || 1;
+
+    const { data: formsRow } = await supabase.from('game_state').select('value')
+      .eq('key', `forms_votes_week_${week_number}`).single();
+    const counts = formsRow?.value ? JSON.parse(formsRow.value) : {};
+
+    if (Object.keys(counts).length === 0) return res.json({ results: [], total: 0, week_number });
+
+    const { data: users } = await supabase.from('users').select('id, name, photo_url').in('id', Object.keys(counts));
+
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const results = Object.keys(counts)
+      .map(id => ({
+        user: users?.find(u => u.id === id),
+        count: counts[id],
+        percentage: total > 0 ? Math.round((counts[id] / total) * 100) : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return res.json({ results, total, week_number });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 // GET /api/admin/dashboard - Full admin stats
 router.get('/dashboard', auth, adminOnly, async (req, res) => {
   try {

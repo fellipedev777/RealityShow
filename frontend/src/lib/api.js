@@ -97,6 +97,8 @@ export const adminAPI = {
   dashboard: () => api.get('/admin/dashboard'),
   openPublicVoting: () => api.post('/admin/open-public-voting'),
   closePublicVoting: () => api.post('/admin/close-public-voting'),
+  importFormsVotes: (sheet_url) => api.post('/admin/import-forms-votes', { sheet_url }),
+  formsVotesResults: () => api.get('/admin/forms-votes-results'),
 };
 
 // Public (no auth)
