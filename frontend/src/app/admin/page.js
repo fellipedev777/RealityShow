@@ -47,6 +47,7 @@ export default function AdminPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [totalWeeks, setTotalWeeks] = useState('');
   const [formsSheetUrl, setFormsSheetUrl] = useState('');
+  const [formsVoteColumn, setFormsVoteColumn] = useState('2');
   const [formsImportResult, setFormsImportResult] = useState(null);
   const [formsResults, setFormsResults] = useState(null);
   const socket = getSocket();
@@ -213,7 +214,7 @@ export default function AdminPage() {
   };
 
   const handleImportFormsVotes = async () => {
-    const res = await action('forms_import', () => adminAPI.importFormsVotes(formsSheetUrl), '');
+    const res = await action('forms_import', () => adminAPI.importFormsVotes(formsSheetUrl, parseInt(formsVoteColumn) || 2), '');
     if (res?.data) setFormsImportResult(res.data);
   };
 
@@ -381,9 +382,12 @@ export default function AdminPage() {
               <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
                 <Link className="w-4 h-4 text-green-400" /> Votos via Google Forms
               </h2>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Cole o link da planilha de respostas do Forms. A planilha deve estar <span className="text-gray-400">pública (qualquer um com o link pode ver)</span>. A 2ª coluna deve ter os nomes dos participantes.
-              </p>
+              <div className="bg-bbb-dark rounded-xl p-3 text-xs text-gray-400 space-y-1 leading-relaxed">
+                <p className="font-semibold text-gray-300">Como configurar:</p>
+                <p>1. Na planilha de respostas: <span className="text-white">Arquivo → Compartilhar → Publicar na Web</span></p>
+                <p>2. Selecione <span className="text-white">Planilha inteira</span> e formato <span className="text-white">CSV</span> → Publicar</p>
+                <p>3. Copie o link gerado e cole abaixo</p>
+              </div>
               <input
                 type="url"
                 value={formsSheetUrl}
@@ -391,6 +395,19 @@ export default function AdminPage() {
                 placeholder="https://docs.google.com/spreadsheets/d/..."
                 className="input text-xs"
               />
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-500 whitespace-nowrap">Coluna do voto:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formsVoteColumn}
+                  onChange={e => setFormsVoteColumn(e.target.value)}
+                  className="input w-16 text-center"
+                  title="Número da coluna onde estão os nomes votados (2 = segunda coluna, após o Timestamp)"
+                />
+                <span className="text-xs text-gray-600">(padrão: 2)</span>
+              </div>
               <ActionButton
                 icon={RefreshCw} label="Sincronizar Votos do Forms" color="btn-primary"
                 onClick={handleImportFormsVotes} loading={loading.forms_import}

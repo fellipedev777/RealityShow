@@ -338,23 +338,40 @@ router.post('/next-week', auth, adminOnly, async (req, res) => {
 // POST /admin/import-forms-votes - Import votes from Google Forms via Sheets CSV
 router.post('/import-forms-votes', auth, adminOnly, async (req, res) => {
   try {
-    const { sheet_url } = req.body;
+    const { sheet_url, vote_column = 1 } = req.body;
     if (!sheet_url) return res.status(400).json({ error: 'URL da planilha é obrigatória' });
 
     const match = sheet_url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-    if (!match) return res.status(400).json({ error: 'URL inválida. Use o link do Google Sheets.' });
+    if (!match) return res.status(400).json({ error: 'URL inválida. Use o link do Google Sheets (não do Forms).' });
 
-    const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`;
+    const sheetId = match[1];
+    // Try pub URL first (Publish to web), fallback to export
+    const urls = [
+      `https://docs.google.com/spreadsheets/d/${sheetId}/pub?output=csv`,
+      `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`,
+    ];
 
-    let csvText;
-    try {
-      const response = await fetch(csvUrl);
-      if (!response.ok) return res.status(400).json({ error: 'Planilha não acessível. Deixe-a pública (qualquer pessoa com o link pode ver).' });
-      csvText = await response.text();
-    } catch {
-      return res.status(400).json({ error: 'Não foi possível acessar a planilha.' });
+    let csvText = null;
+    for (const csvUrl of urls) {
+      try {
+        const response = await fetch(csvUrl, { redirect: 'follow' });
+        if (!response.ok) continue;
+        const contentType = response.headers.get('content-type') || '';
+        const text = await response.text();
+        // Reject if Google returned an HTML login/error page
+        if (contentType.includes('text/html') || text.trimStart().startsWith('<!')) continue;
+        csvText = text;
+        break;
+      } catch { continue; }
     }
 
+    if (!csvText) {
+      return res.status(400).json({
+        error: 'Planilha não acessível. Vá em Arquivo → Compartilhar → Publicar na Web → Publicar como CSV e use esse link. Ou compartilhe como "qualquer pessoa com o link pode ver" e use o link da planilha.'
+      });
+    }
+
+    const colIdx = Math.max(0, parseInt(vote_column) - 1);
     const lines = csvText.split('\n').slice(1).filter(l => l.trim());
 
     const { data: stateRow } = await supabase.from('game_state').select('value').eq('key', 'current_week').single();
@@ -376,7 +393,7 @@ router.post('/import-forms-votes', auth, adminOnly, async (req, res) => {
       }
       cols.push(cur.trim());
 
-      const votedName = cols[1]?.replace(/^"|"$/g, '').trim();
+      const votedName = cols[colIdx]?.replace(/^"|"$/g, '').trim();
       if (!votedName) { skipped++; continue; }
 
       const p = participants?.find(p =>
