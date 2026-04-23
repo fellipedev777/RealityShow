@@ -11,6 +11,7 @@ import {
   Home, MessageSquare, Trophy, Vote, Mic2, Users,
   LogOut, Crown, Shield, Settings, Bell, ChevronDown, X
 } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 
 export default function AppShell({ children }) {
   const router = useRouter();
@@ -203,11 +204,7 @@ export default function AppShell({ children }) {
             {/* User menu */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-bbb-purple flex items-center justify-center text-white text-sm font-bold overflow-hidden">
-                {user?.photo_url ? (
-                  <img src={user.photo_url} alt={user?.name} className="w-full h-full object-cover" />
-                ) : (
-                  user?.name?.[0]?.toUpperCase() || '?'
-                )}
+                <Avatar src={user?.photo_url} name={user?.name} />
               </div>
               <span className="hidden md:block text-sm font-medium text-gray-300 max-w-24 truncate">{user?.name}</span>
               {user?.is_admin && <Crown className="w-4 h-4 text-bbb-gold" />}

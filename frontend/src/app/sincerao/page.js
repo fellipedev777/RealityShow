@@ -8,6 +8,7 @@ import { useStore } from '@/lib/store';
 import { sincerao as sinceracaoAPI, participantsAPI } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { Mic2, Send, Lock, MessageCircle, Clock } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 
 export default function SinceracaoPage() {
   const router = useRouter();
@@ -138,7 +139,7 @@ export default function SinceracaoPage() {
                       }`}
                     >
                       <div className="w-8 h-8 rounded-full bg-bbb-purple flex items-center justify-center text-xs font-bold overflow-hidden shrink-0">
-                        {p.photo_url ? <img src={p.photo_url} alt="" className="w-full h-full object-cover" /> : p.name?.[0]}
+                        <Avatar src={p.photo_url} name={p.name} />
                       </div>
                       <span className="text-sm font-medium">{p.name}</span>
                       {selectedTarget?.id === p.id && <span className="ml-auto text-pink-400 text-xs">✓ Selecionado</span>}

@@ -10,13 +10,13 @@ import { messagesAPI, participantsAPI } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { MessageCircle, Send, ArrowLeft, Search, Lock, Users } from 'lucide-react';
 
+import AvatarImg from '@/components/Avatar';
+
 function Avatar({ user, size = 'md' }) {
   const s = size === 'sm' ? 'w-8 h-8 text-xs' : size === 'lg' ? 'w-12 h-12 text-base' : 'w-10 h-10 text-sm';
   return (
     <div className={`${s} rounded-full bg-bbb-purple flex items-center justify-center font-bold shrink-0 overflow-hidden`}>
-      {user?.photo_url
-        ? <img src={user.photo_url} alt={user?.name} className="w-full h-full object-cover" />
-        : user?.name?.[0]?.toUpperCase() || '?'}
+      <AvatarImg src={user?.photo_url} name={user?.name} />
     </div>
   );
 }

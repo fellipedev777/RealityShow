@@ -8,6 +8,7 @@ import { useStore } from '@/lib/store';
 import { roomsAPI } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { Users, Lock, ArrowLeft } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 import Link from 'next/link';
 
 export default function RoomPage() {
@@ -129,9 +130,7 @@ export default function RoomPage() {
               {participants.map(({ users: p }) => p && (
                 <div key={p.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg">
                   <div className="w-7 h-7 rounded-full bg-bbb-purple flex items-center justify-center text-xs font-bold overflow-hidden shrink-0">
-                    {p.photo_url ? (
-                      <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                    ) : p.name?.[0]?.toUpperCase()}
+                    <Avatar src={p.photo_url} name={p.name} />
                   </div>
                   <span className="text-sm text-gray-300 truncate">{p.name}</span>
                   <span className="ml-auto w-2 h-2 bg-green-400 rounded-full shrink-0" title="Online" />

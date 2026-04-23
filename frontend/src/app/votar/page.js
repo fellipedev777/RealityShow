@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Shield, CheckCircle, Lock, Tv, Users } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 import api from '@/lib/api';
 
 function getOrCreateToken() {
@@ -140,10 +141,7 @@ export default function VotarPage() {
                       }`}
                     >
                       <div className="w-14 h-14 rounded-2xl bg-bbb-purple flex items-center justify-center text-xl font-black overflow-hidden shrink-0">
-                        {p.photo_url
-                          ? <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                          : p.name?.[0]
-                        }
+                        <Avatar src={p.photo_url} name={p.name} />
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-bold text-white text-lg">{p.name}</p>
@@ -228,7 +226,7 @@ export default function VotarPage() {
                   {[...data.participants].sort((a, b) => b.votes - a.votes).map(p => (
                     <div key={p.id} className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-bbb-purple flex items-center justify-center text-xs font-bold overflow-hidden shrink-0">
-                        {p.photo_url ? <img src={p.photo_url} alt="" className="w-full h-full object-cover" /> : p.name?.[0]}
+                        <Avatar src={p.photo_url} name={p.name} />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between text-sm mb-1">

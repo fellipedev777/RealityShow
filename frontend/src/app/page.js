@@ -152,15 +152,32 @@ export default function LoginPage() {
             {!isLogin && (
               <div>
                 <label className="text-xs font-medium text-gray-400 mb-1.5 block">
-                  URL da Foto <span className="text-gray-600">(opcional)</span>
+                  Escolha seu emoji <span className="text-gray-600">(opcional)</span>
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={form.photo_url}
-                  onChange={e => update('photo_url', e.target.value)}
-                  className="input"
-                />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-xl bg-bbb-dark border border-bbb-border flex items-center justify-center text-2xl shrink-0">
+                    {form.photo_url || '?'}
+                  </div>
+                  <p className="text-xs text-gray-500">Clique em um emoji abaixo para escolher seu avatar</p>
+                </div>
+                <div className="grid grid-cols-8 gap-1.5">
+                  {['🦁','🐯','🦊','🐺','🐻','🐼','🦋','🐙',
+                    '🦄','🐉','🔥','⚡','🌟','🌈','🌊','💎',
+                    '👑','🌙','🎭','🎸','🚀','💫','🏆','🎯'].map(emoji => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => update('photo_url', form.photo_url === emoji ? '' : emoji)}
+                      className={`h-10 rounded-lg text-xl flex items-center justify-center transition-all ${
+                        form.photo_url === emoji
+                          ? 'bg-bbb-purple ring-2 ring-bbb-purple scale-110'
+                          : 'bg-bbb-dark hover:bg-bbb-border border border-bbb-border'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

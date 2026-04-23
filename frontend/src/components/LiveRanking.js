@@ -1,6 +1,7 @@
 'use client';
 
 import { Trophy, Medal } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 
 const medals = ['🥇', '🥈', '🥉'];
 
@@ -30,11 +31,7 @@ export default function LiveRanking({ scores = [], provaTitle = 'Ranking Ao Vivo
                 {i < 3 ? medals[i] : `#${i + 1}`}
               </span>
               <div className="w-8 h-8 rounded-full bg-bbb-purple flex items-center justify-center text-xs font-bold overflow-hidden shrink-0">
-                {entry.users?.photo_url ? (
-                  <img src={entry.users.photo_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  entry.users?.name?.[0]?.toUpperCase() || '?'
-                )}
+                <Avatar src={entry.users?.photo_url} name={entry.users?.name} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white truncate">

@@ -2,6 +2,7 @@
 
 import { useStore } from '@/lib/store';
 import { Crown, Star, Shield, X } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 
 export default function ParticipantCard({ participant, showRoom = false, compact = false, onSelect }) {
   const { gameState } = useStore();
@@ -21,11 +22,7 @@ export default function ParticipantCard({ participant, showRoom = false, compact
       >
         <div className="relative shrink-0">
           <div className="w-10 h-10 rounded-full bg-bbb-purple flex items-center justify-center text-sm font-bold overflow-hidden">
-            {participant.photo_url ? (
-              <img src={participant.photo_url} alt={participant.name} className="w-full h-full object-cover" />
-            ) : (
-              participant.name?.[0]?.toUpperCase()
-            )}
+            <Avatar src={participant.photo_url} name={participant.name} />
           </div>
           {isLeader && <Crown className="absolute -top-1 -right-1 w-4 h-4 text-bbb-gold" />}
           {isAngel && !isLeader && <Star className="absolute -top-1 -right-1 w-4 h-4 text-blue-400" />}
@@ -50,13 +47,9 @@ export default function ParticipantCard({ participant, showRoom = false, compact
         <div className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-xl font-bold overflow-hidden ${
           isLeader ? 'ring-2 ring-bbb-gold' : isAngel ? 'ring-2 ring-blue-400' : 'ring-1 ring-bbb-border'
         }`}>
-          {participant.photo_url ? (
-            <img src={participant.photo_url} alt={participant.name} className="w-full h-full object-cover rounded-2xl" />
-          ) : (
-            <div className="w-full h-full bg-bbb-purple flex items-center justify-center rounded-2xl text-white">
-              {participant.name?.[0]?.toUpperCase()}
-            </div>
-          )}
+          <div className="w-full h-full bg-bbb-purple flex items-center justify-center rounded-2xl text-white text-xl font-bold">
+            <Avatar src={participant.photo_url} name={participant.name} imgClass="w-full h-full object-cover rounded-2xl" />
+          </div>
         </div>
         {isLeader && (
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-bbb-gold rounded-full flex items-center justify-center">

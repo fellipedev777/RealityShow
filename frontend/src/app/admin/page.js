@@ -11,6 +11,7 @@ import {
   Crown, Star, Users, ChevronRight, Check, X, RefreshCw,
   Bell, Trophy, Zap, SkipForward, UserX, Globe, Copy, Link, Calendar
 } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 
 function ActionButton({ icon: Icon, label, color = 'btn-primary', onClick, loading, disabled, badge }) {
   return (
@@ -501,7 +502,7 @@ export default function AdminPage() {
                 {participants.filter(p => !p.is_admin).map(p => (
                   <div key={p.id} className={`flex items-center gap-2 px-4 py-2.5 ${p.is_eliminated ? 'opacity-40' : ''}`}>
                     <div className="w-8 h-8 rounded-full bg-bbb-purple flex items-center justify-center text-xs font-bold overflow-hidden shrink-0">
-                      {p.photo_url ? <img src={p.photo_url} alt="" className="w-full h-full object-cover" /> : p.name?.[0]}
+                      <Avatar src={p.photo_url} name={p.name} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-white truncate">{p.name}</p>

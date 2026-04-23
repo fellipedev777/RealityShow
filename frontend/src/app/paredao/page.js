@@ -7,6 +7,7 @@ import { useStore } from '@/lib/store';
 import { participantsAPI } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { Shield, X, AlertTriangle, Flame } from 'lucide-react';
+import Avatar from '@/components/Avatar';
 
 export default function ParedaoPage() {
   const router = useRouter();
@@ -103,14 +104,8 @@ export default function ParedaoPage() {
                 <div key={p.id} className="card p-6 text-center border-red-500/30 bg-red-950/10 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-red-950/30 to-transparent pointer-events-none" />
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-2xl mx-auto mb-3 overflow-hidden ring-2 ring-red-500/50">
-                      {p.photo_url ? (
-                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-red-500/20 flex items-center justify-center text-2xl font-black text-red-300">
-                          {p.name?.[0]}
-                        </div>
-                      )}
+                    <div className="w-20 h-20 rounded-2xl mx-auto mb-3 overflow-hidden ring-2 ring-red-500/50 bg-red-500/20 flex items-center justify-center text-2xl font-black text-red-300">
+                      <Avatar src={p.photo_url} name={p.name} imgClass="w-full h-full object-cover" />
                     </div>
                     <p className="font-bold text-white text-sm">{p.name}</p>
                     <div className="mt-2">
