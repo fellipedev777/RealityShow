@@ -30,7 +30,7 @@ function ActionButton({ icon: Icon, label, color = 'btn-primary', onClick, loadi
 
 export default function AdminPage() {
   const router = useRouter();
-  const { token, user, gameState, updateGameState, participants, setParticipants } = useStore();
+  const { token, user, gameState, updateGameState, setGameState, participants, setParticipants } = useStore();
   const [loading, setLoading] = useState({});
   const [announcement, setAnnouncement] = useState('');
   const [sinceracaoTheme, setSinceracaoTheme] = useState('');
@@ -213,7 +213,22 @@ export default function AdminPage() {
   const handleResetGame = async () => {
     if (!confirm('⚠️ ATENÇÃO: Isso vai resetar TODO o reality.\n\nVotos, paredões, provas e eliminações serão apagados.\nOs participantes cadastrados serão mantidos.\n\nTem certeza?')) return;
     if (!confirm('Confirmar RESET COMPLETO do reality?')) return;
-    await action('reset', () => adminAPI.resetGame(), '🔄 Reality resetado! Todos os participantes foram reativados.');
+    const res = await action('reset', () => adminAPI.resetGame(), '🔄 Reality resetado! Clique em Iniciar para começar.');
+    if (res?.data?.success) {
+      setGameState({
+        game_started: 'false',
+        current_week: '1',
+        current_leader_id: 'null',
+        current_angel_id: 'null',
+        immune_user_id: 'null',
+        paredao_users: '[]',
+        votacao_active: 'false',
+        sincerao_active: 'false',
+        public_voting_active: 'false',
+        total_weeks: gameState?.total_weeks || '10',
+      });
+      participantsAPI.list().then(r => setParticipants(r.data.participants)).catch(() => {});
+    }
   };
 
   const handleNextWeek = async () => {
