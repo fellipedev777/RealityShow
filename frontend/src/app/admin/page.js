@@ -210,6 +210,12 @@ export default function AdminPage() {
     updateGameState('total_weeks', n);
   };
 
+  const handleResetGame = async () => {
+    if (!confirm('⚠️ ATENÇÃO: Isso vai resetar TODO o reality.\n\nVotos, paredões, provas e eliminações serão apagados.\nOs participantes cadastrados serão mantidos.\n\nTem certeza?')) return;
+    if (!confirm('Confirmar RESET COMPLETO do reality?')) return;
+    await action('reset', () => adminAPI.resetGame(), '🔄 Reality resetado! Todos os participantes foram reativados.');
+  };
+
   const handleNextWeek = async () => {
     if (!confirm('Avançar para próxima semana?')) return;
     const res = await action('next_week', () => adminAPI.nextWeek(), '📅 Nova semana iniciada!');
@@ -571,6 +577,29 @@ export default function AdminPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+        {/* Reset */}
+        <div className="card p-5 border-red-900/40 bg-red-950/10 mt-2">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-red-400 flex items-center gap-2 mb-1">
+                <AlertTriangle className="w-4 h-4" /> Resetar Reality
+              </h2>
+              <p className="text-xs text-gray-500">
+                Apaga votos, paredões, provas e eliminações. Mantém os participantes cadastrados e começa uma nova temporada do zero.
+              </p>
+            </div>
+            <button
+              onClick={handleResetGame}
+              disabled={loading.reset}
+              className="btn-danger shrink-0 flex items-center gap-2"
+            >
+              {loading.reset
+                ? <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                : <RefreshCw className="w-4 h-4" />}
+              Resetar Tudo
+            </button>
           </div>
         </div>
       </div>

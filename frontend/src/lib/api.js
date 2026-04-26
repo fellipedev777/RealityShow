@@ -97,6 +97,7 @@ export const adminAPI = {
   dashboard: () => api.get('/admin/dashboard'),
   openPublicVoting: () => api.post('/admin/open-public-voting'),
   closePublicVoting: () => api.post('/admin/close-public-voting'),
+  resetGame: () => api.post('/admin/reset-game'),
 };
 
 // Public (no auth)

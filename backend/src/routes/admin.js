@@ -335,6 +335,61 @@ router.post('/next-week', auth, adminOnly, async (req, res) => {
   }
 });
 
+// POST /api/admin/reset-game - Full game reset
+router.post('/reset-game', auth, adminOnly, async (req, res) => {
+  try {
+    // Reset game_state
+    const resetState = [
+      { key: 'game_started', value: 'false' },
+      { key: 'current_week', value: '1' },
+      { key: 'current_day', value: '1' },
+      { key: 'current_leader_id', value: 'null' },
+      { key: 'current_angel_id', value: 'null' },
+      { key: 'immune_user_id', value: 'null' },
+      { key: 'leader_indication', value: 'null' },
+      { key: 'paredao_users', value: '[]' },
+      { key: 'votacao_active', value: 'false' },
+      { key: 'sincerao_active', value: 'false' },
+      { key: 'public_voting_active', value: 'false' },
+      { key: 'total_weeks', value: '10' },
+    ];
+    await supabase.from('game_state').upsert(resetState, { onConflict: 'key' });
+
+    // Remove is_eliminated from all participants
+    await supabase.from('users')
+      .update({ is_eliminated: false, eliminated_at: null })
+      .eq('is_admin', false);
+
+    // Clear game data
+    await Promise.all([
+      supabase.from('votes').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+      supabase.from('paredao').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+      supabase.from('sincerao_events').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+      supabase.from('provas').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+    ]);
+
+    // Move everyone back to sala-principal
+    const { data: mainRoom } = await supabase
+      .from('rooms').select('id').eq('slug', 'sala-principal').single();
+
+    if (mainRoom) {
+      const { data: users } = await supabase
+        .from('users').select('id').eq('is_admin', false);
+      if (users?.length) {
+        await supabase.from('room_participants').upsert(
+          users.map(u => ({ user_id: u.id, room_id: mainRoom.id })),
+          { onConflict: 'user_id' }
+        );
+      }
+    }
+
+    return res.json({ success: true, message: 'Reality resetado com sucesso!' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Erro interno ao resetar' });
+  }
+});
+
 // GET /api/admin/dashboard - Full admin stats
 router.get('/dashboard', auth, adminOnly, async (req, res) => {
   try {
