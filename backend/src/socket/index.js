@@ -3,6 +3,8 @@ const supabase = require('../config/database');
 
 // Active prova timers
 const provaTimers = {};
+// Current question state per prova (sent to late joiners)
+const activeProvaState = {}; // prova_id -> { provaInfo, questionData }
 // Debounce timers for prova scores broadcast (prova_id -> timeout)
 const scoreBroadcastTimers = {};
 // Active users in rooms: roomId -> Set of socket ids
@@ -42,6 +44,13 @@ module.exports = (io) => {
 
     // Emit current game state to newly connected user
     emitGameState(socket);
+
+    // If a prova is active, send the current question to the late joiner
+    const activeEntry = Object.values(activeProvaState)[0];
+    if (activeEntry?.questionData) {
+      socket.emit('prova_started', activeEntry.provaInfo);
+      socket.emit('prova_question', activeEntry.questionData);
+    }
 
     // ─── JOIN ROOM ───────────────────────────────────────────
     socket.on('join_room', async ({ room_id }) => {
@@ -139,18 +148,21 @@ module.exports = (io) => {
 
       const questions = [...(prova.questions || [])].sort((a, b) => a.order_index - b.order_index);
 
-      io.emit('prova_started', { prova_id, type: prova.type, title: prova.title, total_questions: questions.length });
+      const provaInfo = { prova_id, type: prova.type, title: prova.title, total_questions: questions.length };
+      io.emit('prova_started', provaInfo);
+      activeProvaState[prova_id] = { provaInfo, questionData: null };
 
       // Send questions one by one with timer
       let qIndex = 0;
       const sendNextQuestion = () => {
         if (qIndex >= questions.length) {
+          delete activeProvaState[prova_id];
           endProva(prova_id, prova.type);
           return;
         }
 
         const q = questions[qIndex];
-        io.emit('prova_question', {
+        const questionData = {
           prova_id,
           question_index: qIndex,
           total: questions.length,
@@ -159,8 +171,11 @@ module.exports = (io) => {
             text: q.question_text,
             options: { A: q.option_a, B: q.option_b, C: q.option_c, D: q.option_d }
           },
-          time_limit: prova.time_per_question || 30
-        });
+          time_limit: prova.time_per_question || 15
+        };
+
+        io.emit('prova_question', questionData);
+        activeProvaState[prova_id] = { provaInfo, questionData };
 
         qIndex++;
         provaTimers[prova_id] = setTimeout(sendNextQuestion, (prova.time_per_question + 2) * 1000);
