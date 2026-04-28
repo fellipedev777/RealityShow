@@ -41,7 +41,7 @@ router.post('/create', auth, adminOnly, async (req, res) => {
 
     const { data: prova, error } = await supabase
       .from('provas')
-      .insert({ type, title, status: 'waiting', time_per_question: 30 })
+      .insert({ type, title, status: 'waiting', time_per_question: 15 })
       .select()
       .single();
 

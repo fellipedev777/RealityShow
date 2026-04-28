@@ -199,4 +199,61 @@ router.get('/results', async (req, res) => {
   }
 });
 
+// GET /api/public/landing - Reality show info for landing page
+router.get('/landing', async (req, res) => {
+  try {
+    const cached = getCache('landing');
+    if (cached) return res.json(cached);
+
+    const { data: stateRows } = await supabase
+      .from('game_state')
+      .select('key, value')
+      .in('key', ['reality_name', 'reality_emoji', 'reality_description', 'game_started', 'current_week', 'total_weeks', 'public_voting_active']);
+
+    const state = {};
+    (stateRows || []).forEach(row => {
+      try { state[row.key] = JSON.parse(row.value); } catch { state[row.key] = row.value; }
+    });
+
+    const { count: total } = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_admin', false);
+    const { count: active } = await supabase.from('users').select('id', { count: 'exact', head: true }).eq('is_admin', false).eq('is_eliminated', false);
+
+    const payload = { ...state, total_participants: total || 0, active_participants: active || 0 };
+    setCache('landing', payload, 10000);
+    return res.json(payload);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// GET /api/public/eliminated - Elimination history
+router.get('/eliminated', async (req, res) => {
+  try {
+    const cached = getCache('eliminated');
+    if (cached) return res.json(cached);
+
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, name, photo_url, eliminated_at')
+      .eq('is_eliminated', true)
+      .eq('is_admin', false)
+      .order('eliminated_at', { ascending: false });
+
+    const eliminated = await Promise.all((users || []).map(async (u) => {
+      const { data: paredao } = await supabase
+        .from('paredao')
+        .select('week_number, votes_against')
+        .eq('eliminated_id', u.id)
+        .single();
+      return { ...u, week: paredao?.week_number || null, votes: paredao?.votes_against || 0 };
+    }));
+
+    const payload = { eliminated };
+    setCache('eliminated', payload, 10000);
+    return res.json(payload);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 module.exports = router;

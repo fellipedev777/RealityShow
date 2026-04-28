@@ -141,10 +141,11 @@ export default function ProvaPage() {
             <div className="p-4 bg-bbb-dark rounded-xl border border-bbb-border">
               <p className="text-sm text-gray-500 mb-3 font-semibold">Como funcionam as provas:</p>
               <div className="space-y-2 text-sm text-gray-400 text-left">
-                <div className="flex gap-2"><span className="text-bbb-gold">👑</span> <span><strong>Prova do Líder</strong> — toda segunda-feira</span></div>
-                <div className="flex gap-2"><span className="text-blue-400">⭐</span> <span><strong>Prova do Anjo</strong> — toda terça-feira</span></div>
-                <div className="flex gap-2"><span className="text-orange-400">⚡</span> <span><strong>Bate e Volta</strong> — toda sexta-feira</span></div>
-                <div className="flex gap-2"><span className="text-gray-400">🎯</span> <span>10 perguntas, 30 segundos cada</span></div>
+                <div className="flex gap-2"><span className="text-bbb-gold">👑</span> <span><strong>Prova do Líder</strong> — define o líder da semana</span></div>
+                <div className="flex gap-2"><span className="text-blue-400">⭐</span> <span><strong>Prova do Anjo</strong> — define o anjo da semana</span></div>
+                <div className="flex gap-2"><span className="text-green-400">🏡</span> <span><strong>Quarta</strong> — Convivência</span></div>
+                <div className="flex gap-2"><span className="text-pink-400">🎤</span> <span><strong>Sexta</strong> — Sincerão</span></div>
+                <div className="flex gap-2"><span className="text-gray-400">🎯</span> <span>10 perguntas, 15 segundos cada</span></div>
                 <div className="flex gap-2"><span className="text-gray-400">🏆</span> <span>Maior pontuação vence!</span></div>
               </div>
             </div>

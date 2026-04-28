@@ -104,4 +104,6 @@ export const adminAPI = {
 export const publicAPI = {
   paredao: () => api.get('/public/paredao'),
   results: () => api.get('/public/results'),
+  landing: () => api.get('/public/landing'),
+  eliminated: () => api.get('/public/eliminated'),
 };

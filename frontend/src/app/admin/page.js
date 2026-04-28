@@ -46,7 +46,11 @@ export default function AdminPage() {
   const [voteResults, setVoteResults] = useState(null);
   const [publicResults, setPublicResults] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [landingCopied, setLandingCopied] = useState(false);
   const [totalWeeks, setTotalWeeks] = useState('');
+  const [realityName, setRealityName] = useState('');
+  const [realityEmoji, setRealityEmoji] = useState('');
+  const [realityDescription, setRealityDescription] = useState('');
   const socket = getSocket();
 
   useEffect(() => {
@@ -213,6 +217,21 @@ export default function AdminPage() {
     updateGameState('total_weeks', n);
   };
 
+  const handleSaveIdentity = async () => {
+    await Promise.all([
+      realityName && adminAPI.updateState('reality_name', realityName),
+      realityEmoji && adminAPI.updateState('reality_emoji', realityEmoji),
+      realityDescription && adminAPI.updateState('reality_description', realityDescription),
+    ].filter(Boolean));
+    showFeedback('✅ Identidade salva!');
+  };
+
+  const handleCopyLanding = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/temporada`);
+    setLandingCopied(true);
+    setTimeout(() => setLandingCopied(false), 2000);
+  };
+
   const handleResetGame = async () => {
     if (!confirm('⚠️ ATENÇÃO: Isso vai resetar TODO o reality.\n\nVotos, paredões, provas e eliminações serão apagados.\nOs participantes cadastrados serão mantidos.\n\nTem certeza?')) return;
     if (!confirm('Confirmar RESET COMPLETO do reality?')) return;
@@ -271,6 +290,25 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Column 1 - Game control */}
           <div className="space-y-4">
+            {/* Identity card */}
+            <div className="card p-4 space-y-3 border-bbb-gold/20">
+              <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                <Star className="w-4 h-4 text-bbb-gold" /> Identidade do Reality
+              </h2>
+              <div className="flex gap-2">
+                <input value={realityEmoji} onChange={e => setRealityEmoji(e.target.value)} placeholder="🏆" className="input w-14 text-center text-xl" maxLength={2} />
+                <input value={realityName} onChange={e => setRealityName(e.target.value)} placeholder="Nome do reality" className="input flex-1" />
+              </div>
+              <input value={realityDescription} onChange={e => setRealityDescription(e.target.value)} placeholder="Descrição curta" className="input" />
+              <div className="flex gap-2">
+                <button onClick={handleSaveIdentity} className="btn-gold flex-1 gap-2"><Check className="w-4 h-4" /> Salvar</button>
+                <button onClick={handleCopyLanding} className="btn-outline gap-2 text-bbb-gold border-bbb-gold/30">
+                  {landingCopied ? <Check className="w-4 h-4" /> : <Link className="w-4 h-4" />}
+                  {landingCopied ? 'Copiado!' : '/temporada'}
+                </button>
+              </div>
+            </div>
+
             <div className="card p-4 space-y-3">
               <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
                 <Play className="w-4 h-4 text-green-400" /> Controle do Jogo
@@ -313,7 +351,6 @@ export default function AdminPage() {
               <select value={provaType} onChange={e => setProvaType(e.target.value)} className="input">
                 <option value="lider">👑 Prova do Líder</option>
                 <option value="anjo">⭐ Prova do Anjo</option>
-                <option value="bate_volta">⚡ Bate e Volta</option>
               </select>
               <ActionButton icon={Zap} label="🚀 Criar e Iniciar Prova" color="btn-gold" onClick={handleCreateProva} loading={loading.prova} />
             </div>
