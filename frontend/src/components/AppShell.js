@@ -9,7 +9,7 @@ import { participantsAPI, messagesAPI } from '@/lib/api';
 import { disconnectSocket, getSocket } from '@/lib/socket';
 import {
   Home, MessageSquare, Trophy, Vote, Mic2, Users,
-  LogOut, Crown, Shield, Settings, Bell, ChevronDown, X
+  LogOut, Crown, Shield, Settings, Bell, ChevronDown, X, Heart
 } from 'lucide-react';
 import Avatar from '@/components/Avatar';
 
@@ -70,6 +70,7 @@ export default function AppShell({ children }) {
     { href: '/sincerao', label: 'Sincerão', icon: Mic2 },
     { href: '/paredao', label: 'Paredão', icon: Shield },
     { href: '/messages', label: 'Mensagens', icon: MessageSquare, badge: unreadMessages },
+    { href: '/queridometro', label: 'Queridômetro', icon: Heart },
   ];
 
   if (user?.is_admin) {

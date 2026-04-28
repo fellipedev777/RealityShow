@@ -52,6 +52,7 @@ app.use('/api/sincerao', require('./routes/sincerao'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/public', require('./routes/public'));
+app.use('/api/queridometro', require('./routes/queridometro'));
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'LiveReality API', timestamp: new Date().toISOString() }));

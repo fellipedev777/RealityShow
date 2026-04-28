@@ -105,6 +105,13 @@ export const adminAPI = {
   provasHistory: () => api.get('/admin/provas/history'),
 };
 
+// Queridômetro
+export const queridometroAPI = {
+  rate: (rated_id, emoji) => api.post('/queridometro/rate', { rated_id, emoji }),
+  results: () => api.get('/queridometro/results'),
+  myRatings: () => api.get('/queridometro/my-ratings'),
+};
+
 // Public (no auth)
 export const publicAPI = {
   paredao: () => api.get('/public/paredao'),
