@@ -66,6 +66,12 @@ export const useStore = create((set, get) => ({
   survivorCelebration: null,
   setSurvivorCelebration: (data) => set({ survivorCelebration: data }),
 
+  // Anjo / Líder phases
+  anjoChoosing: false,
+  setAnjoChoosing: (v) => set({ anjoChoosing: v }),
+  liderIndicating: false,
+  setLiderIndicating: (v) => set({ liderIndicating: v }),
+
   // Sincrôneo
   sincerao: null,
   setSincerao: (s) => set({ sincerao: s }),

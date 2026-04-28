@@ -29,6 +29,9 @@ const io = new Server(server, {
   maxHttpBufferSize: 1e6
 });
 
+// Make io accessible in routes via req.app.get('io')
+app.set('io', io);
+
 // Middlewares
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: allowedOrigins, credentials: true }));
@@ -53,6 +56,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/queridometro', require('./routes/queridometro'));
+app.use('/api/game', require('./routes/game'));
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'LiveReality API', timestamp: new Date().toISOString() }));

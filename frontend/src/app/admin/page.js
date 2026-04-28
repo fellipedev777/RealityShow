@@ -103,6 +103,18 @@ export default function AdminPage() {
     updateGameState('sincerao_active', false);
   };
 
+  const handleOpenAnjoChoice = async () => {
+    await action('anjo_choice', () => adminAPI.openAnjoChoice(), '🕊️ Anjo está escolhendo!');
+    emit('open_anjo_choice', {});
+    updateGameState('anjo_choosing', 'true');
+  };
+
+  const handleOpenLiderIndication = async () => {
+    await action('lider_ind', () => adminAPI.openLiderIndication(), '👑 Líder está indicando!');
+    emit('open_lider_indication', {});
+    updateGameState('lider_indicating', 'true');
+  };
+
   const handleOpenVotacao = async () => {
     await action('votacao', () => adminAPI.openVotacao(), '🗳️ Votação aberta!');
     emit('open_votacao', { week: gameState?.current_week });
@@ -431,18 +443,50 @@ export default function AdminPage() {
 
             <div className="card p-4 space-y-3">
               <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                <Vote className="w-4 h-4 text-red-400" /> Votação
+                <Vote className="w-4 h-4 text-red-400" /> Formação do Paredão
               </h2>
-              <ActionButton
-                icon={Vote} label="Abrir Votação" color="btn-primary" onClick={handleOpenVotacao}
-                loading={loading.votacao} disabled={votacaoActive}
-                badge={votacaoActive ? { text: 'Aberta', color: 'bg-green-500/20 text-green-400' } : null}
-              />
-              <ActionButton
-                icon={X} label="Fechar e Formar Paredão" color="btn-danger" onClick={handleCloseVotacao}
-                loading={loading.votacao_close} disabled={!votacaoActive}
-              />
-              <ActionButton icon={RefreshCw} label="Ver Resultados" color="btn-outline" onClick={handleLoadVoteResults} loading={loading.results} />
+
+              {/* Step 1: Anjo */}
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500 font-semibold">① Escolha do Anjo</p>
+                {gameState?.immune_user_id && gameState.immune_user_id !== 'null' ? (
+                  <p className="text-xs text-blue-400">✅ Imunizado: {participants.find(p => p.id === gameState.immune_user_id)?.name || '?'}</p>
+                ) : (
+                  <ActionButton icon={Star} label="🕊️ Abrir Escolha do Anjo" color="btn-primary"
+                    onClick={handleOpenAnjoChoice} loading={loading.anjo_choice}
+                    badge={gameState?.anjo_choosing === 'true' ? { text: 'Aguardando...', color: 'bg-blue-500/20 text-blue-400' } : null}
+                  />
+                )}
+              </div>
+
+              {/* Step 2: Líder */}
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500 font-semibold">② Indicação do Líder</p>
+                {gameState?.leader_indication && gameState.leader_indication !== 'null' ? (
+                  <p className="text-xs text-orange-400">✅ Indicado: {participants.find(p => p.id === gameState.leader_indication)?.name || '?'}</p>
+                ) : (
+                  <ActionButton icon={Crown} label="👑 Abrir Indicação do Líder" color="btn-primary"
+                    onClick={handleOpenLiderIndication} loading={loading.lider_ind}
+                    badge={gameState?.lider_indicating === 'true' ? { text: 'Aguardando...', color: 'bg-orange-500/20 text-orange-400' } : null}
+                  />
+                )}
+              </div>
+
+              {/* Step 3: Vote */}
+              <div className="space-y-1">
+                <p className="text-xs text-gray-500 font-semibold">③ Voto Geral</p>
+                <ActionButton
+                  icon={Vote} label="Abrir Votação" color="btn-primary" onClick={handleOpenVotacao}
+                  loading={loading.votacao} disabled={votacaoActive}
+                  badge={votacaoActive ? { text: 'Aberta', color: 'bg-green-500/20 text-green-400' } : null}
+                />
+                <ActionButton
+                  icon={X} label="Fechar e Formar Paredão" color="btn-danger" onClick={handleCloseVotacao}
+                  loading={loading.votacao_close} disabled={!votacaoActive}
+                />
+              </div>
+
+              <ActionButton icon={RefreshCw} label="Ver Resultados dos Votos" color="btn-outline" onClick={handleLoadVoteResults} loading={loading.results} />
               {voteResults && (
                 <div className="bg-bbb-dark rounded-xl p-3 space-y-2">
                   <p className="text-xs text-gray-500 font-semibold">Votos da Semana {voteResults.week_number}:</p>

@@ -313,6 +313,12 @@ module.exports = (io) => {
         case 'survivor_celebration':
           io.emit('survivor_celebration', eventData);
           break;
+        case 'open_anjo_choice':
+          io.emit('anjo_choosing_open', eventData);
+          break;
+        case 'open_lider_indication':
+          io.emit('lider_indicating_open', eventData);
+          break;
       }
     });
 

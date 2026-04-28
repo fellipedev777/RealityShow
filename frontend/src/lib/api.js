@@ -99,11 +99,19 @@ export const adminAPI = {
   closePublicVoting: () => api.post('/admin/close-public-voting'),
   resetGame: () => api.post('/admin/reset-game'),
   resolveTie: (confirmed_ids, chosen_id) => api.post('/admin/resolve-tie', { confirmed_ids, chosen_id }),
+  openAnjoChoice: () => api.post('/admin/open-anjo-choice'),
+  openLiderIndication: () => api.post('/admin/open-lider-indication'),
   endGame: (winner_id) => api.post('/admin/end-game', { winner_id }),
   listQuestions: () => api.get('/admin/questions'),
   addQuestion: (data) => api.post('/admin/questions', data),
   deleteQuestion: (id) => api.delete(`/admin/questions/${id}`),
   provasHistory: () => api.get('/admin/provas/history'),
+};
+
+// Game actions (Angel / Leader choices)
+export const gameAPI = {
+  anjoChoose: (immune_user_id) => api.post('/game/anjo-choose', { immune_user_id }),
+  liderIndicate: (indicated_user_id) => api.post('/game/lider-indicate', { indicated_user_id }),
 };
 
 // Queridômetro

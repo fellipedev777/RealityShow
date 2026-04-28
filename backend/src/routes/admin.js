@@ -136,6 +136,26 @@ router.post('/close-sincerao', auth, adminOnly, async (req, res) => {
   }
 });
 
+// POST /api/admin/open-anjo-choice
+router.post('/open-anjo-choice', auth, adminOnly, async (req, res) => {
+  try {
+    await supabase.from('game_state').upsert({ key: 'anjo_choosing', value: 'true' }, { onConflict: 'key' });
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// POST /api/admin/open-lider-indication
+router.post('/open-lider-indication', auth, adminOnly, async (req, res) => {
+  try {
+    await supabase.from('game_state').upsert({ key: 'lider_indicating', value: 'true' }, { onConflict: 'key' });
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 // POST /api/admin/open-public-voting
 router.post('/open-public-voting', auth, adminOnly, async (req, res) => {
   try {

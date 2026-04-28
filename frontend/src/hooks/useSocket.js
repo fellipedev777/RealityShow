@@ -7,7 +7,8 @@ import { useStore } from '@/lib/store';
 export function useSocket() {
   const { token, user, setGameState, updateGameState, addAnnouncement, setActiveProva,
           setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination, updateUser,
-          setParticipants, setRealityWinner, setSurvivorCelebration } = useStore();
+          setParticipants, setRealityWinner, setSurvivorCelebration,
+          setAnjoChoosing, setLiderIndicating } = useStore();
   const listenersSet = useRef(false);
 
   useEffect(() => {
@@ -82,6 +83,32 @@ export function useSocket() {
     socket.on('reality_ended', (data) => {
       setRealityWinner(data.winner);
       updateGameState('game_ended', true);
+    });
+
+    socket.on('anjo_choosing_open', () => {
+      setAnjoChoosing(true);
+      updateGameState('anjo_choosing', 'true');
+      addAnnouncement({ id: Date.now().toString(), content: '🕊️ O Anjo está escolhendo quem imunizar!', type: 'info', created_at: new Date().toISOString() });
+    });
+
+    socket.on('anjo_chose', (data) => {
+      setAnjoChoosing(false);
+      updateGameState('anjo_choosing', 'false');
+      updateGameState('immune_user_id', data.immune_user_id);
+      addAnnouncement({ id: Date.now().toString(), content: `🛡️ ${data.immune_user_name} foi imunizado(a) pelo Anjo!`, type: 'success', created_at: new Date().toISOString() });
+    });
+
+    socket.on('lider_indicating_open', () => {
+      setLiderIndicating(true);
+      updateGameState('lider_indicating', 'true');
+      addAnnouncement({ id: Date.now().toString(), content: '👑 O Líder está fazendo sua indicação!', type: 'info', created_at: new Date().toISOString() });
+    });
+
+    socket.on('lider_indicated', (data) => {
+      setLiderIndicating(false);
+      updateGameState('lider_indicating', 'false');
+      updateGameState('leader_indication', data.indicated_user_id);
+      addAnnouncement({ id: Date.now().toString(), content: `👉 O Líder indicou ${data.indicated_user_name} para o paredão!`, type: 'warning', created_at: new Date().toISOString() });
     });
 
     socket.on('survivor_celebration', (data) => {

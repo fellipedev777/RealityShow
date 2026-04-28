@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { useSocket } from '@/hooks/useSocket';
-import { participantsAPI, messagesAPI } from '@/lib/api';
+import { participantsAPI, messagesAPI, gameAPI } from '@/lib/api';
 import { disconnectSocket, getSocket } from '@/lib/socket';
 import {
   Home, MessageSquare, Trophy, Vote, Mic2, Users,
@@ -16,11 +16,14 @@ import Avatar from '@/components/Avatar';
 export default function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva, realityWinner, setRealityWinner, survivorCelebration, setSurvivorCelebration } = useStore();
+  const { user, token, setUser, setToken, logout, gameState, participants, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva, realityWinner, setRealityWinner, survivorCelebration, setSurvivorCelebration, anjoChoosing, setAnjoChoosing, liderIndicating, setLiderIndicating } = useStore();
   const socket = useSocket();
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [selectedImmunize, setSelectedImmunize] = useState('');
+  const [selectedIndicate, setSelectedIndicate] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Auth guard
   useEffect(() => {
@@ -147,6 +150,93 @@ export default function AppShell({ children }) {
             </div>
             <button onClick={() => setSurvivorCelebration(null)} className="btn-primary px-8 py-3 text-base mx-auto">
               Continuar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Anjo immunization overlay */}
+      {anjoChoosing && user?.id === gameState?.current_angel_id && (
+        <div className="fixed inset-0 z-[105] flex items-center justify-center p-4" style={{background: 'rgba(0,0,0,0.93)'}}>
+          <div className="max-w-lg w-full space-y-5 animate-fade-in">
+            <div className="text-center">
+              <div className="text-6xl mb-3">🕊️</div>
+              <h1 className="text-3xl font-black text-white">Hora da Imunidade!</h1>
+              <p className="text-gray-400 mt-2">Escolha quem você quer proteger do paredão</p>
+            </div>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {participants.filter(p => !p.is_admin && !p.is_eliminated && p.id !== user?.id).map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedImmunize(p.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${selectedImmunize === p.id ? 'border-blue-400 bg-blue-500/20 text-white' : 'border-bbb-border text-gray-300 hover:border-blue-400/50'}`}
+                >
+                  <Shield className="w-4 h-4 shrink-0" />
+                  <span className="font-medium">{p.name}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              disabled={!selectedImmunize || actionLoading}
+              onClick={async () => {
+                setActionLoading(true);
+                try {
+                  await gameAPI.anjoChoose(selectedImmunize);
+                  setAnjoChoosing(false);
+                  setSelectedImmunize('');
+                } catch (err) {
+                  alert(err?.response?.data?.error || 'Erro ao imunizar');
+                } finally { setActionLoading(false); }
+              }}
+              className="btn-primary w-full py-3 text-base font-bold"
+            >
+              {actionLoading ? '...' : '🛡️ Confirmar Imunidade'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Líder indication overlay */}
+      {liderIndicating && user?.id === gameState?.current_leader_id && (
+        <div className="fixed inset-0 z-[105] flex items-center justify-center p-4" style={{background: 'rgba(0,0,0,0.93)'}}>
+          <div className="max-w-lg w-full space-y-5 animate-fade-in">
+            <div className="text-center">
+              <div className="text-6xl mb-3">👑</div>
+              <h1 className="text-3xl font-black text-white">Sua Indicação!</h1>
+              <p className="text-gray-400 mt-2">Quem você indica diretamente para o paredão?</p>
+            </div>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {participants.filter(p => {
+                if (p.is_admin || p.is_eliminated || p.id === user?.id) return false;
+                const immuneId = gameState?.immune_user_id;
+                if (immuneId && immuneId !== 'null' && immuneId === p.id) return false;
+                return true;
+              }).map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedIndicate(p.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${selectedIndicate === p.id ? 'border-red-400 bg-red-500/20 text-white' : 'border-bbb-border text-gray-300 hover:border-red-400/50'}`}
+                >
+                  <ChevronDown className="w-4 h-4 shrink-0 rotate-[-90deg]" />
+                  <span className="font-medium">{p.name}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              disabled={!selectedIndicate || actionLoading}
+              onClick={async () => {
+                setActionLoading(true);
+                try {
+                  await gameAPI.liderIndicate(selectedIndicate);
+                  setLiderIndicating(false);
+                  setSelectedIndicate('');
+                } catch (err) {
+                  alert(err?.response?.data?.error || 'Erro ao indicar');
+                } finally { setActionLoading(false); }
+              }}
+              className="btn-danger w-full py-3 text-base font-bold"
+            >
+              {actionLoading ? '...' : '👉 Confirmar Indicação'}
             </button>
           </div>
         </div>
