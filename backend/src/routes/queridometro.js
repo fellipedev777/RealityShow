@@ -11,6 +11,13 @@ const RATINGS = [
   { emoji: '😤', value: 1, label: 'Não gosto' },
 ];
 
+const todayBRT = () => {
+  // BRT = UTC-3
+  const now = new Date();
+  const brt = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  return brt.toISOString().split('T')[0];
+};
+
 // POST /api/queridometro/rate
 router.post('/rate', auth, async (req, res) => {
   try {
@@ -20,6 +27,23 @@ router.post('/rate', auth, async (req, res) => {
 
     const rating = RATINGS.find(r => r.emoji === emoji);
     if (!rating) return res.status(400).json({ error: 'Emoji inválido' });
+
+    // Check if already rated today
+    const { data: existing } = await supabase
+      .from('queridometro_ratings')
+      .select('updated_at')
+      .eq('rater_id', req.user.id)
+      .eq('rated_id', rated_id)
+      .maybeSingle();
+
+    if (existing) {
+      const ratedOn = new Date(existing.updated_at).toISOString().split('T')[0];
+      const brtRatedOn = new Date(new Date(existing.updated_at).getTime() - 3 * 60 * 60 * 1000)
+        .toISOString().split('T')[0];
+      if (brtRatedOn === todayBRT()) {
+        return res.status(400).json({ error: 'Você já avaliou esta pessoa hoje' });
+      }
+    }
 
     await supabase.from('queridometro_ratings').upsert({
       rater_id: req.user.id,
@@ -65,12 +89,19 @@ router.get('/my-ratings', auth, async (req, res) => {
   try {
     const { data } = await supabase
       .from('queridometro_ratings')
-      .select('rated_id, emoji')
+      .select('rated_id, emoji, updated_at')
       .eq('rater_id', req.user.id);
 
+    const today = todayBRT();
     const myRatings = {};
-    (data || []).forEach(r => { myRatings[r.rated_id] = r.emoji; });
-    return res.json({ myRatings });
+    const ratedToday = [];
+    (data || []).forEach(r => {
+      myRatings[r.rated_id] = r.emoji;
+      const ratedOn = new Date(new Date(r.updated_at).getTime() - 3 * 60 * 60 * 1000)
+        .toISOString().split('T')[0];
+      if (ratedOn === today) ratedToday.push(r.rated_id);
+    });
+    return res.json({ myRatings, ratedToday });
   } catch (err) {
     return res.status(500).json({ error: 'Erro interno' });
   }
