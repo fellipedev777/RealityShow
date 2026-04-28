@@ -162,11 +162,15 @@ export default function AdminPage() {
     if (!confirm('Confirmar eliminação? Esta ação é irreversível!')) return;
     const res = await action('eliminate', () => adminAPI.eliminate(selectedEliminate, eliminationSpeech.trim() || null), '❌ Participante eliminado!');
     if (res?.data) {
-      const { speech, eliminated } = res.data;
+      const { speech, eliminated, survivors } = res.data;
       emit('elimination', { user_id: selectedEliminate, name: eliminated, speech });
+      if (survivors?.length > 0) {
+        emit('survivor_celebration', { survivors, eliminated_name: eliminated });
+      }
       setParticipants(participants.map(p =>
         p.id === selectedEliminate ? { ...p, is_eliminated: true } : p
       ));
+      updateGameState('paredao_users', '[]');
       setSelectedEliminate('');
       setEliminationSpeech('');
     }
@@ -302,6 +306,9 @@ export default function AdminPage() {
   };
 
   const activeParticipants = participants.filter(p => !p.is_admin && !p.is_eliminated && p.is_active);
+
+  const paredaoIds = (() => { try { return JSON.parse(gameState?.paredao_users || '[]'); } catch { return []; } })();
+  const paredaoParticipants = activeParticipants.filter(p => paredaoIds.includes(p.id));
 
   const publicVotingActive = gameState?.public_voting_active === true || gameState?.public_voting_active === 'true';
   const sinceracaoActive = gameState?.sincerao_active === true || gameState?.sincerao_active === 'true';
@@ -626,33 +633,39 @@ export default function AdminPage() {
               <h2 className="font-bold text-sm text-red-400 uppercase tracking-wider flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" /> Eliminação
               </h2>
-              <select value={selectedEliminate} onChange={e => setSelectedEliminate(e.target.value)} className="input">
-                <option value="">Selecionar participante...</option>
-                {activeParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Discurso de eliminação <span className="text-gray-600">(opcional — deixe vazio para gerar automaticamente)</span></label>
-                <textarea
-                  value={eliminationSpeech}
-                  onChange={e => setEliminationSpeech(e.target.value)}
-                  placeholder={selectedEliminate ? `Escreva o discurso para ${activeParticipants.find(p => p.id === selectedEliminate)?.name || ''}...` : 'Selecione um participante primeiro...'}
-                  rows={3}
-                  maxLength={400}
-                  disabled={!selectedEliminate}
-                  className="input resize-none text-sm"
-                />
-                {eliminationSpeech && (
-                  <p className="text-xs text-gray-600 mt-1 text-right">{eliminationSpeech.length}/400</p>
-                )}
-              </div>
-              <button
-                onClick={handleEliminate}
-                disabled={!selectedEliminate || loading.eliminate}
-                className="btn-danger w-full justify-start gap-3"
-              >
-                <UserX className="w-4 h-4" />
-                ❌ Eliminar Participante
-              </button>
+              {paredaoParticipants.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-2">Nenhum paredão ativo. Forme o paredão primeiro.</p>
+              ) : (
+                <>
+                  <select value={selectedEliminate} onChange={e => setSelectedEliminate(e.target.value)} className="input">
+                    <option value="">Selecionar do paredão...</option>
+                    {paredaoParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Discurso de eliminação <span className="text-gray-600">(opcional)</span></label>
+                    <textarea
+                      value={eliminationSpeech}
+                      onChange={e => setEliminationSpeech(e.target.value)}
+                      placeholder={selectedEliminate ? `Escreva o discurso para ${paredaoParticipants.find(p => p.id === selectedEliminate)?.name || ''}...` : 'Selecione um participante primeiro...'}
+                      rows={3}
+                      maxLength={400}
+                      disabled={!selectedEliminate}
+                      className="input resize-none text-sm"
+                    />
+                    {eliminationSpeech && (
+                      <p className="text-xs text-gray-600 mt-1 text-right">{eliminationSpeech.length}/400</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleEliminate}
+                    disabled={!selectedEliminate || loading.eliminate}
+                    className="btn-danger w-full justify-start gap-3"
+                  >
+                    <UserX className="w-4 h-4" />
+                    ❌ Eliminar do Paredão
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Game state summary */}

@@ -62,6 +62,10 @@ export const useStore = create((set, get) => ({
   realityWinner: null,
   setRealityWinner: (winner) => set({ realityWinner: winner }),
 
+  // Survivor celebration
+  survivorCelebration: null,
+  setSurvivorCelebration: (data) => set({ survivorCelebration: data }),
+
   // Sincrôneo
   sincerao: null,
   setSincerao: (s) => set({ sincerao: s }),

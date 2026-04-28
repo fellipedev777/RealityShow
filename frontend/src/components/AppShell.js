@@ -16,7 +16,7 @@ import Avatar from '@/components/Avatar';
 export default function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva, realityWinner, setRealityWinner } = useStore();
+  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva, realityWinner, setRealityWinner, survivorCelebration, setSurvivorCelebration } = useStore();
   const socket = useSocket();
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -128,6 +128,26 @@ export default function AppShell({ children }) {
                 Fechar
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {survivorCelebration && (
+        <div className="fixed inset-0 z-[105] flex items-center justify-center p-4" style={{background: 'rgba(0,0,0,0.93)'}}>
+          <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">
+            <div className="text-7xl mb-2">🎉</div>
+            <div>
+              <p className="text-green-400 text-sm font-semibold uppercase tracking-widest mb-2">Você ficou no reality!</p>
+              <h1 className="text-5xl font-black text-white">PARABÉNS!</h1>
+            </div>
+            <div className="card p-6 border-green-500/30 bg-green-500/5">
+              <p className="text-gray-200 text-lg">
+                {survivorCelebration.eliminated_name} foi eliminado(a), mas você continua na casa! 💪
+              </p>
+            </div>
+            <button onClick={() => setSurvivorCelebration(null)} className="btn-primary px-8 py-3 text-base mx-auto">
+              Continuar
+            </button>
           </div>
         </div>
       )}

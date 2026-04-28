@@ -310,6 +310,9 @@ module.exports = (io) => {
         case 'end_game':
           io.emit('reality_ended', eventData);
           break;
+        case 'survivor_celebration':
+          io.emit('survivor_celebration', eventData);
+          break;
       }
     });
 

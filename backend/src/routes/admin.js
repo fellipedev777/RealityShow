@@ -295,13 +295,27 @@ router.post('/eliminate', auth, adminOnly, async (req, res) => {
       .update({ eliminated_id: user_id, status: 'eliminated', resolved_at: new Date().toISOString() })
       .eq('week_number', week_number);
 
+    // Get survivors before clearing paredão
+    const { data: paredaoState } = await supabase
+      .from('game_state').select('value').eq('key', 'paredao_users').single();
+    let survivors = [];
+    try {
+      const paredaoList = JSON.parse(paredaoState?.value || '[]');
+      const survivorIds = paredaoList.filter(id => id !== user_id);
+      if (survivorIds.length > 0) {
+        const { data: survivorData } = await supabase
+          .from('users').select('id, name').in('id', survivorIds);
+        survivors = survivorData || [];
+      }
+    } catch {}
+
     // Clear paredão state
     await supabase.from('game_state').upsert(
       { key: 'paredao_users', value: '[]' },
       { onConflict: 'key' }
     );
 
-    return res.json({ success: true, speech, eliminated: user?.name });
+    return res.json({ success: true, speech, eliminated: user?.name, survivors });
   } catch (err) {
     return res.status(500).json({ error: 'Erro interno' });
   }

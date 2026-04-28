@@ -7,7 +7,7 @@ import { useStore } from '@/lib/store';
 export function useSocket() {
   const { token, user, setGameState, updateGameState, addAnnouncement, setActiveProva,
           setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination, updateUser,
-          setParticipants, setRealityWinner } = useStore();
+          setParticipants, setRealityWinner, setSurvivorCelebration } = useStore();
   const listenersSet = useRef(false);
 
   useEffect(() => {
@@ -82,6 +82,20 @@ export function useSocket() {
     socket.on('reality_ended', (data) => {
       setRealityWinner(data.winner);
       updateGameState('game_ended', true);
+    });
+
+    socket.on('survivor_celebration', (data) => {
+      const currentUser = useStore.getState().user;
+      const isSurvivor = data.survivors?.some(s => s.id === currentUser?.id);
+      if (isSurvivor) setSurvivorCelebration(data);
+      const names = data.survivors?.map(s => s.name).join(' e ') || '';
+      const verb = (data.survivors?.length || 0) === 1 ? 'ficou' : 'ficaram';
+      addAnnouncement({
+        id: Date.now().toString(),
+        content: `🎉 ${names} ${verb} no reality! ${data.eliminated_name} foi eliminado(a).`,
+        type: 'success',
+        created_at: new Date().toISOString()
+      });
     });
 
     socket.on('new_week', (data) => {
