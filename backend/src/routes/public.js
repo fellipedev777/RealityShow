@@ -3,9 +3,23 @@ const supabase = require('../config/database');
 
 const router = express.Router();
 
+// Simple in-memory cache: key -> { data, expiresAt }
+const cache = {};
+function getCache(key) {
+  const entry = cache[key];
+  if (entry && entry.expiresAt > Date.now()) return entry.data;
+  delete cache[key];
+  return null;
+}
+function setCache(key, data, ttlMs = 5000) {
+  cache[key] = { data, expiresAt: Date.now() + ttlMs };
+}
+
 // GET /api/public/paredao - Get current paredão (no auth)
 router.get('/paredao', async (req, res) => {
   try {
+    const cached = getCache('paredao');
+    if (cached) return res.json(cached);
     const { data: stateRows } = await supabase
       .from('game_state')
       .select('key, value')
@@ -21,7 +35,9 @@ router.get('/paredao', async (req, res) => {
     const isOpen = state.public_voting_active === true || state.public_voting_active === 'true';
 
     if (!isOpen) {
-      return res.json({ open: false, week, participants: [] });
+      const payload = { open: false, week, participants: [] };
+      setCache('paredao', payload);
+      return res.json(payload);
     }
 
     if (paredaoIds.length === 0) {
@@ -54,7 +70,9 @@ router.get('/paredao', async (req, res) => {
       percentage: totalVotes > 0 ? Math.round(((counts[p.id] || 0) / totalVotes) * 100) : 0
     }));
 
-    return res.json({ open: true, week, participants: result, totalVotes });
+    const payload = { open: true, week, participants: result, totalVotes };
+    setCache('paredao', payload);
+    return res.json(payload);
   } catch (err) {
     return res.status(500).json({ error: 'Erro interno' });
   }
@@ -126,6 +144,10 @@ router.post('/vote', async (req, res) => {
 
     if (error) return res.status(500).json({ error: 'Erro ao registrar voto' });
 
+    // Invalidate caches so next read reflects the new vote
+    delete cache['paredao'];
+    delete cache['results'];
+
     // Get voted participant name
     const { data: participant } = await supabase
       .from('users')
@@ -142,6 +164,8 @@ router.post('/vote', async (req, res) => {
 // GET /api/public/results - Get public vote results (admin uses this too)
 router.get('/results', async (req, res) => {
   try {
+    const cached = getCache('results');
+    if (cached) return res.json(cached);
     const { data: weekRow } = await supabase
       .from('game_state')
       .select('value')
@@ -167,7 +191,9 @@ router.get('/results', async (req, res) => {
       .sort((a, b) => b.count - a.count)
       .map(r => ({ ...r, percentage: total > 0 ? Math.round((r.count / total) * 100) : 0 }));
 
-    return res.json({ results, total, week_number });
+    const payload = { results, total, week_number };
+    setCache('results', payload);
+    return res.json(payload);
   } catch (err) {
     return res.status(500).json({ error: 'Erro interno' });
   }
