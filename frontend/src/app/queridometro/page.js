@@ -25,9 +25,7 @@ const AVG_EMOJI = (avg) => {
 // 19h BRT = 22h UTC
 const isResultsUnlocked = () => {
   const now = new Date();
-  const h = now.getUTCHours();
-  const m = now.getUTCMinutes();
-  return h > 22 || (h === 22 && m >= 0);
+  return now.getUTCHours() >= 22;
 };
 
 const getCountdown = () => {
@@ -46,7 +44,6 @@ export default function QueridometroPage() {
   const router = useRouter();
   const { token, user, participants, setParticipants } = useStore();
   const [myRatings, setMyRatings] = useState({});
-  const [ratedToday, setRatedToday] = useState([]);
   const [results, setResults] = useState([]);
   const [tab, setTab] = useState('votar');
   const [saving, setSaving] = useState(null);
@@ -63,7 +60,6 @@ export default function QueridometroPage() {
     ]).then(([pRes, mRes, rRes]) => {
       setParticipants(pRes.data.participants || []);
       setMyRatings(mRes.data.myRatings || {});
-      setRatedToday(mRes.data.ratedToday || []);
       setResults(rRes.data.results || []);
     }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
@@ -77,7 +73,6 @@ export default function QueridometroPage() {
       if (!cd) {
         setUnlocked(true);
         clearInterval(timer);
-        // Load results when unlocked
         queridometroAPI.results().then(r => setResults(r.data.results || [])).catch(() => {});
       }
     }, 1000);
@@ -85,12 +80,11 @@ export default function QueridometroPage() {
   }, [unlocked]);
 
   const handleRate = async (rated_id, emoji) => {
-    if (ratedToday.includes(rated_id)) return;
+    if (myRatings[rated_id]) return;
     setSaving(rated_id);
     try {
       await queridometroAPI.rate(rated_id, emoji);
       setMyRatings(r => ({ ...r, [rated_id]: emoji }));
-      setRatedToday(r => [...r, rated_id]);
     } catch (err) {
       const msg = err?.response?.data?.error;
       if (msg) alert(msg);
@@ -137,7 +131,7 @@ export default function QueridometroPage() {
         ) : tab === 'votar' ? (
           <div className="space-y-3">
             {others.map(p => {
-              const alreadyToday = ratedToday.includes(p.id);
+              const alreadyRated = !!myRatings[p.id];
               return (
                 <div key={p.id} className="card p-4">
                   <div className="flex items-center gap-3 mb-3">
@@ -145,12 +139,10 @@ export default function QueridometroPage() {
                       <Avatar src={p.photo_url} name={p.name} />
                     </div>
                     <p className="font-semibold text-white flex-1">{p.name}</p>
-                    {alreadyToday ? (
+                    {alreadyRated ? (
                       <span className="flex items-center gap-1 text-xs text-gray-500">
-                        <Lock className="w-3 h-3" /> avaliado hoje
+                        <Lock className="w-3 h-3" /> avaliado
                       </span>
-                    ) : myRatings[p.id] ? (
-                      <span className="text-xl">{myRatings[p.id]}</span>
                     ) : null}
                   </div>
                   <div className="grid grid-cols-4 gap-2">
@@ -158,12 +150,12 @@ export default function QueridometroPage() {
                       <button
                         key={r.emoji}
                         onClick={() => handleRate(p.id, r.emoji)}
-                        disabled={saving === p.id || alreadyToday}
+                        disabled={saving === p.id || alreadyRated}
                         className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border text-xs font-medium transition-all ${
-                          alreadyToday
-                            ? 'border-bbb-border text-gray-600 opacity-50 cursor-not-allowed'
-                            : myRatings[p.id] === r.emoji
-                            ? 'bg-pink-500/20 border-pink-500 text-white scale-105'
+                          alreadyRated && myRatings[p.id] === r.emoji
+                            ? 'bg-pink-500/20 border-pink-500 text-white'
+                            : alreadyRated
+                            ? 'border-bbb-border text-gray-600 opacity-40 cursor-not-allowed'
                             : 'border-bbb-border text-gray-400 hover:border-pink-500/50 hover:bg-pink-500/5'
                         }`}
                       >
