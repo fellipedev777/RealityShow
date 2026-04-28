@@ -155,6 +155,9 @@ export default function AdminPage() {
     if (res?.data) {
       const { speech, eliminated } = res.data;
       emit('elimination', { user_id: selectedEliminate, name: eliminated, speech });
+      setParticipants(participants.map(p =>
+        p.id === selectedEliminate ? { ...p, is_eliminated: true } : p
+      ));
       setSelectedEliminate('');
       setEliminationSpeech('');
     }

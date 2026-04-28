@@ -6,7 +6,8 @@ import { useStore } from '@/lib/store';
 
 export function useSocket() {
   const { token, user, setGameState, updateGameState, addAnnouncement, setActiveProva,
-          setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination, updateUser } = useStore();
+          setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination, updateUser,
+          setParticipants } = useStore();
   const listenersSet = useRef(false);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export function useSocket() {
       if (data.user_id === user?.id) {
         updateUser({ is_eliminated: true });
       }
+      setParticipants(useStore.getState().participants.filter(p => p.id !== data.user_id));
       addAnnouncement({
         id: Date.now().toString(),
         content: `❌ ${data.name} foi eliminado(a) do LiveReality!`,
