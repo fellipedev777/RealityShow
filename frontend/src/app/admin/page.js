@@ -112,8 +112,19 @@ export default function AdminPage() {
     const res = await action('votacao_close', () => adminAPI.closeVotacao(), '🔒 Votação encerrada!');
     emit('close_votacao', {});
     updateGameState('votacao_active', false);
+    if (res?.data?.has_tie) {
+      setTieData({ confirmed: res.data.confirmed, tied_users: res.data.tied_users });
+      showFeedback('⚖️ Empate detectado! O líder deve indicar quem vai ao paredão.');
+    } else if (res?.data?.paredao) {
+      emit('paredao_formed', { participants: res.data.paredao });
+    }
+  };
+
+  const handleResolveTie = async (chosenId) => {
+    const res = await action('resolve_tie', () => adminAPI.resolveTie(tieData.confirmed, chosenId), '✅ Empate resolvido! Paredão formado.');
     if (res?.data?.paredao) {
       emit('paredao_formed', { participants: res.data.paredao });
+      setTieData(null);
     }
   };
 
@@ -293,6 +304,7 @@ export default function AdminPage() {
     if (res) emit('next_week', { week: res.data?.new_week });
   };
 
+  const [tieData, setTieData] = useState(null); // { confirmed: [id], tied_users: [{id,name}] }
   const [selectedWinner, setSelectedWinner] = useState('');
 
   const handleEndGame = async () => {
@@ -431,6 +443,31 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+
+            {/* Tie resolution card */}
+            {tieData && (
+              <div className="card p-4 space-y-3 border-yellow-500/40 bg-yellow-500/5">
+                <h2 className="font-bold text-sm text-yellow-400 uppercase tracking-wider flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> Empate! Líder Indica
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Há empate de votos. O líder deve escolher quem vai ao paredão:
+                </p>
+                <div className="space-y-2">
+                  {tieData.tied_users.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => handleResolveTie(p.id)}
+                      disabled={loading.resolve_tie}
+                      className="btn-danger w-full justify-start gap-3 text-sm"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                      {p.name} vai ao paredão
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Public voting card */}
             <div className="card p-4 space-y-3 border-blue-500/20">

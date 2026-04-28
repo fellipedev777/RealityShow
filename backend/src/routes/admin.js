@@ -175,6 +175,22 @@ router.post('/open-votacao', auth, adminOnly, async (req, res) => {
   }
 });
 
+// Helper to persist and return a formed paredão
+async function formParedao(paredaoUsers, week_number, counts) {
+  const voteCounts = {};
+  paredaoUsers.forEach(id => { voteCounts[id] = counts[id] || 0; });
+  await supabase.from('paredao').upsert({
+    week_number,
+    participants: paredaoUsers,
+    vote_counts: voteCounts,
+    status: 'active'
+  }, { onConflict: 'week_number' });
+  await supabase.from('game_state').upsert(
+    { key: 'paredao_users', value: JSON.stringify(paredaoUsers) },
+    { onConflict: 'key' }
+  );
+}
+
 // POST /api/admin/close-votacao - Close voting and build paredão
 router.post('/close-votacao', auth, adminOnly, async (req, res) => {
   try {
@@ -184,63 +200,91 @@ router.post('/close-votacao', auth, adminOnly, async (req, res) => {
     );
 
     const { data: stateRow } = await supabase
-      .from('game_state')
-      .select('value')
-      .eq('key', 'current_week')
-      .single();
-
+      .from('game_state').select('value').eq('key', 'current_week').single();
     const week_number = parseInt(stateRow?.value) || 1;
 
     const { data: votes } = await supabase
-      .from('votes')
-      .select('voted_for_id')
-      .eq('week_number', week_number)
-      .eq('vote_type', 'paredao');
+      .from('votes').select('voted_for_id')
+      .eq('week_number', week_number).eq('vote_type', 'paredao');
 
     const counts = {};
     (votes || []).forEach(v => {
       counts[v.voted_for_id] = (counts[v.voted_for_id] || 0) + 1;
     });
 
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const top2 = sorted.slice(0, 2).map(([id]) => id);
-
-    // Add leader's indication if any
-    const { data: leaderIndication } = await supabase
-      .from('game_state')
-      .select('value')
-      .eq('key', 'leader_indication')
-      .single();
-
-    if (leaderIndication?.value && !top2.includes(leaderIndication.value.replace(/"/g, ''))) {
-      top2.push(leaderIndication.value.replace(/"/g, ''));
-    }
-
     // Remove immune user
     const { data: immuneRow } = await supabase
-      .from('game_state')
-      .select('value')
-      .eq('key', 'immune_user_id')
-      .single();
-
+      .from('game_state').select('value').eq('key', 'immune_user_id').single();
     const immuneId = immuneRow?.value?.replace(/"/g, '');
-    const paredaoUsers = top2.filter(id => id !== immuneId);
 
-    const voteCounts = {};
-    paredaoUsers.forEach(id => { voteCounts[id] = counts[id] || 0; });
-
-    await supabase.from('paredao').upsert({
-      week_number,
-      participants: paredaoUsers,
-      vote_counts: voteCounts,
-      status: 'active'
-    }, { onConflict: 'week_number' });
-
-    await supabase.from('game_state').upsert(
-      { key: 'paredao_users', value: JSON.stringify(paredaoUsers) },
-      { onConflict: 'key' }
+    const eligible = Object.fromEntries(
+      Object.entries(counts).filter(([id]) => id !== immuneId)
     );
+    const sorted = Object.entries(eligible).sort((a, b) => b[1] - a[1]);
 
+    if (sorted.length < 2) {
+      const paredaoUsers = sorted.map(([id]) => id);
+      await formParedao(paredaoUsers, week_number, eligible);
+      return res.json({ success: true, paredao: paredaoUsers });
+    }
+
+    // Detect tie at position 2: third entry (index 2) has same votes as second (index 1)
+    const hasTie = sorted.length > 2 && sorted[1][1] === sorted[2][1];
+
+    if (hasTie) {
+      const confirmedId = sorted[0][0];
+      const tiedVoteCount = sorted[1][1];
+      const tiedIds = sorted.filter(([, v]) => v === tiedVoteCount).map(([id]) => id);
+      const { data: tiedUsers } = await supabase
+        .from('users').select('id, name').in('id', tiedIds);
+      return res.json({
+        success: true,
+        has_tie: true,
+        confirmed: [confirmedId],
+        tied_users: tiedUsers || []
+      });
+    }
+
+    // No tie — proceed normally
+    const top2 = [sorted[0][0], sorted[1][0]];
+
+    // Add leader's indication if not already in top2
+    const { data: leaderIndication } = await supabase
+      .from('game_state').select('value').eq('key', 'leader_indication').single();
+    if (leaderIndication?.value && leaderIndication.value !== 'null') {
+      const indicatedId = leaderIndication.value.replace(/"/g, '');
+      if (!top2.includes(indicatedId) && indicatedId !== immuneId) {
+        top2.push(indicatedId);
+      }
+    }
+
+    await formParedao(top2, week_number, eligible);
+    return res.json({ success: true, paredao: top2 });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// POST /api/admin/resolve-tie - Leader breaks tie to complete paredão
+router.post('/resolve-tie', auth, adminOnly, async (req, res) => {
+  try {
+    const { confirmed_ids, chosen_id } = req.body;
+    if (!chosen_id || !Array.isArray(confirmed_ids)) {
+      return res.status(400).json({ error: 'Dados inválidos' });
+    }
+
+    const { data: stateRow } = await supabase
+      .from('game_state').select('value').eq('key', 'current_week').single();
+    const week_number = parseInt(stateRow?.value) || 1;
+
+    const { data: votes } = await supabase
+      .from('votes').select('voted_for_id')
+      .eq('week_number', week_number).eq('vote_type', 'paredao');
+    const counts = {};
+    (votes || []).forEach(v => { counts[v.voted_for_id] = (counts[v.voted_for_id] || 0) + 1; });
+
+    const paredaoUsers = [...confirmed_ids, chosen_id];
+    await formParedao(paredaoUsers, week_number, counts);
     return res.json({ success: true, paredao: paredaoUsers });
   } catch (err) {
     return res.status(500).json({ error: 'Erro interno' });
