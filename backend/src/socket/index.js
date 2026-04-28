@@ -307,6 +307,9 @@ module.exports = (io) => {
         case 'next_week':
           io.emit('new_week', eventData);
           break;
+        case 'end_game':
+          io.emit('reality_ended', eventData);
+          break;
       }
     });
 

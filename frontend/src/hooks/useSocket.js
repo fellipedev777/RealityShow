@@ -7,7 +7,7 @@ import { useStore } from '@/lib/store';
 export function useSocket() {
   const { token, user, setGameState, updateGameState, addAnnouncement, setActiveProva,
           setCurrentQuestion, setProvaScores, setParedaoUsers, showElimination, updateUser,
-          setParticipants } = useStore();
+          setParticipants, setRealityWinner } = useStore();
   const listenersSet = useRef(false);
 
   useEffect(() => {
@@ -78,6 +78,11 @@ export function useSocket() {
     socket.on('votacao_closed', () => updateGameState('votacao_active', false));
     socket.on('sincerao_opened', (d) => updateGameState('sincerao_active', true));
     socket.on('sincerao_closed', () => updateGameState('sincerao_active', false));
+
+    socket.on('reality_ended', (data) => {
+      setRealityWinner(data.winner);
+      updateGameState('game_ended', true);
+    });
 
     socket.on('new_week', (data) => {
       updateGameState('current_week', data.week);

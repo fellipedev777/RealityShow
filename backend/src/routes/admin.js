@@ -397,6 +397,27 @@ router.get('/dashboard', auth, adminOnly, async (req, res) => {
   }
 });
 
+// POST /api/admin/end-game - End the reality and declare winner
+router.post('/end-game', auth, adminOnly, async (req, res) => {
+  try {
+    const { winner_id } = req.body;
+    if (!winner_id) return res.status(400).json({ error: 'winner_id é obrigatório' });
+
+    const { data: winner } = await supabase
+      .from('users').select('id, name, photo_url').eq('id', winner_id).single();
+    if (!winner) return res.status(404).json({ error: 'Participante não encontrado' });
+
+    await supabase.from('game_state').upsert([
+      { key: 'game_ended', value: 'true' },
+      { key: 'winner_id', value: JSON.stringify(winner_id) },
+    ], { onConflict: 'key' });
+
+    return res.json({ success: true, winner });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 // GET /api/admin/questions - List question bank
 router.get('/questions', auth, adminOnly, async (req, res) => {
   try {

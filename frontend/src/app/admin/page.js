@@ -289,6 +289,18 @@ export default function AdminPage() {
     if (res) emit('next_week', { week: res.data?.new_week });
   };
 
+  const [selectedWinner, setSelectedWinner] = useState('');
+
+  const handleEndGame = async () => {
+    if (!selectedWinner) return;
+    const winner = participants.find(p => p.id === selectedWinner);
+    if (!confirm(`Declarar ${winner?.name} como vencedor(a) do reality? Esta ação encerrará o jogo para todos.`)) return;
+    const res = await action('end_game', () => adminAPI.endGame(selectedWinner), '🏆 Reality encerrado!');
+    if (res?.data?.winner) {
+      emit('end_game', { winner: res.data.winner });
+    }
+  };
+
   const activeParticipants = participants.filter(p => !p.is_admin && !p.is_eliminated && p.is_active);
 
   const publicVotingActive = gameState?.public_voting_active === true || gameState?.public_voting_active === 'true';
@@ -734,6 +746,25 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* End game */}
+        <div className="card p-5 border-bbb-gold/30 bg-bbb-gold/5 mt-2">
+          <div className="flex items-center gap-3 mb-3">
+            <Trophy className="w-5 h-5 text-bbb-gold" />
+            <h2 className="font-bold text-bbb-gold">Finalizar Reality</h2>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">Declara o vencedor e exibe a tela de campeão para todos os participantes.</p>
+          <div className="flex gap-2">
+            <select value={selectedWinner} onChange={e => setSelectedWinner(e.target.value)} className="input flex-1">
+              <option value="">Selecionar vencedor...</option>
+              {activeParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <button onClick={handleEndGame} disabled={!selectedWinner || loading.end_game} className="btn-gold px-4 gap-2">
+              {loading.end_game ? <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> : <Trophy className="w-4 h-4" />}
+              Finalizar
+            </button>
           </div>
         </div>
 

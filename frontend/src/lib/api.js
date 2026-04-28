@@ -98,6 +98,7 @@ export const adminAPI = {
   openPublicVoting: () => api.post('/admin/open-public-voting'),
   closePublicVoting: () => api.post('/admin/close-public-voting'),
   resetGame: () => api.post('/admin/reset-game'),
+  endGame: (winner_id) => api.post('/admin/end-game', { winner_id }),
   listQuestions: () => api.get('/admin/questions'),
   addQuestion: (data) => api.post('/admin/questions', data),
   deleteQuestion: (id) => api.delete(`/admin/questions/${id}`),

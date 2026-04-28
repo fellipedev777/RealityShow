@@ -16,7 +16,7 @@ import Avatar from '@/components/Avatar';
 export default function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva } = useStore();
+  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva, realityWinner, setRealityWinner } = useStore();
   const socket = useSocket();
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -111,6 +111,26 @@ export default function AppShell({ children }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Elimination Modal */}
+      {realityWinner && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" style={{background: 'rgba(0,0,0,0.95)'}}>
+          <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">
+            <div className="text-7xl mb-2">🏆</div>
+            <div>
+              <p className="text-bbb-gold text-sm font-semibold uppercase tracking-widest mb-2">Campeão do LiveReality</p>
+              <h1 className="text-5xl font-black text-white">{realityWinner.name}</h1>
+            </div>
+            <div className="card p-6 border-bbb-gold/40 bg-bbb-gold/5">
+              <p className="text-gray-200 text-lg">🎉 Parabéns ao grande vencedor desta temporada!</p>
+            </div>
+            {user?.is_admin && (
+              <button onClick={() => setRealityWinner(null)} className="btn-outline px-8 py-3 text-base mx-auto">
+                Fechar
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {eliminationModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{background: 'rgba(0,0,0,0.92)'}}>
           <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">

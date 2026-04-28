@@ -58,6 +58,10 @@ export const useStore = create((set, get) => ({
   showElimination: (data) => set({ eliminationModal: data }),
   closeElimination: () => set({ eliminationModal: null }),
 
+  // Reality winner
+  realityWinner: null,
+  setRealityWinner: (winner) => set({ realityWinner: winner }),
+
   // Sincrôneo
   sincerao: null,
   setSincerao: (s) => set({ sincerao: s }),
