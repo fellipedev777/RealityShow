@@ -39,6 +39,7 @@ export default function AdminPage() {
   const [selectedImmune, setSelectedImmune] = useState('');
   const [selectedEliminate, setSelectedEliminate] = useState('');
   const [eliminationSpeech, setEliminationSpeech] = useState('');
+  const [selectedLeaderIndication, setSelectedLeaderIndication] = useState('');
   const [selectedMoveUser, setSelectedMoveUser] = useState('');
   const [selectedMoveRoom, setSelectedMoveRoom] = useState('');
   const [provaType, setProvaType] = useState('lider');
@@ -166,6 +167,18 @@ export default function AdminPage() {
     await action('immune_clear', () => adminAPI.updateState('immune_user_id', null), '🛡️ Imunidade removida!');
     updateGameState('immune_user_id', null);
     setSelectedImmune('');
+  };
+
+  const handleSetLeaderIndication = async () => {
+    if (!selectedLeaderIndication) return;
+    await action('li', () => adminAPI.updateState('leader_indication', selectedLeaderIndication), '👉 Indicação do líder definida!');
+    updateGameState('leader_indication', selectedLeaderIndication);
+  };
+
+  const handleClearLeaderIndication = async () => {
+    await action('li_clear', () => adminAPI.updateState('leader_indication', null), '👉 Indicação removida!');
+    updateGameState('leader_indication', null);
+    setSelectedLeaderIndication('');
   };
 
   const handleEliminate = async () => {
@@ -615,6 +628,33 @@ export default function AdminPage() {
                     onClick={handleClearImmune}
                     disabled={!gameState?.immune_user_id || gameState.immune_user_id === 'null'}
                     title="Remover imunidade"
+                    className="btn-danger px-3"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Indicação do Líder <span className="text-red-400">*obrigatório para formar paredão</span>
+                  {gameState?.leader_indication && gameState.leader_indication !== 'null' && (
+                    <span className="ml-2 text-orange-400">
+                      · atual: {participants.find(p => p.id === gameState.leader_indication)?.name || '?'}
+                    </span>
+                  )}
+                </label>
+                <div className="flex gap-2">
+                  <select value={selectedLeaderIndication} onChange={e => setSelectedLeaderIndication(e.target.value)} className="input flex-1">
+                    <option value="">Selecione...</option>
+                    {activeParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                  <button onClick={handleSetLeaderIndication} disabled={!selectedLeaderIndication} className="btn-primary px-3">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleClearLeaderIndication}
+                    disabled={!gameState?.leader_indication || gameState.leader_indication === 'null'}
+                    title="Remover indicação"
                     className="btn-danger px-3"
                   >
                     <X className="w-4 h-4" />

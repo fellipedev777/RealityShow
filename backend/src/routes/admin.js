@@ -191,9 +191,17 @@ async function formParedao(paredaoUsers, week_number, counts) {
   );
 }
 
-// POST /api/admin/close-votacao - Close voting and build paredão
+// POST /api/admin/close-votacao - Close voting and build paredão (always 3: top2 + leader's pick)
 router.post('/close-votacao', auth, adminOnly, async (req, res) => {
   try {
+    // Require leader indication before closing
+    const { data: liRow } = await supabase
+      .from('game_state').select('value').eq('key', 'leader_indication').single();
+    const indicatedId = liRow?.value?.replace(/"/g, '') || null;
+    if (!indicatedId || indicatedId === 'null') {
+      return res.status(400).json({ error: 'O líder precisa fazer sua indicação antes de fechar a votação' });
+    }
+
     await supabase.from('game_state').upsert(
       { key: 'votacao_active', value: 'false' },
       { onConflict: 'key' }
@@ -223,43 +231,35 @@ router.post('/close-votacao', auth, adminOnly, async (req, res) => {
     const sorted = Object.entries(eligible).sort((a, b) => b[1] - a[1]);
 
     if (sorted.length < 2) {
-      const paredaoUsers = sorted.map(([id]) => id);
-      await formParedao(paredaoUsers, week_number, eligible);
+      const paredaoUsers = [...new Set([...sorted.map(([id]) => id), indicatedId])];
+      await formParedao(paredaoUsers, week_number, counts);
       return res.json({ success: true, paredao: paredaoUsers });
     }
 
-    // Detect tie at position 2: third entry (index 2) has same votes as second (index 1)
+    // Detect tie at position 2 (index 1 and index 2 have same vote count)
     const hasTie = sorted.length > 2 && sorted[1][1] === sorted[2][1];
 
     if (hasTie) {
-      const confirmedId = sorted[0][0];
       const tiedVoteCount = sorted[1][1];
-      const tiedIds = sorted.filter(([, v]) => v === tiedVoteCount).map(([id]) => id);
+      // All tied candidates excluding top1 and the already-confirmed indication
+      const tiedIds = sorted
+        .filter(([id, v]) => v === tiedVoteCount && id !== indicatedId)
+        .map(([id]) => id);
       const { data: tiedUsers } = await supabase
         .from('users').select('id, name').in('id', tiedIds);
+      // confirmed = top1 voted + leader's indication (already secured)
       return res.json({
         success: true,
         has_tie: true,
-        confirmed: [confirmedId],
+        confirmed: [sorted[0][0], indicatedId],
         tied_users: tiedUsers || []
       });
     }
 
-    // No tie — proceed normally
-    const top2 = [sorted[0][0], sorted[1][0]];
-
-    // Add leader's indication if not already in top2
-    const { data: leaderIndication } = await supabase
-      .from('game_state').select('value').eq('key', 'leader_indication').single();
-    if (leaderIndication?.value && leaderIndication.value !== 'null') {
-      const indicatedId = leaderIndication.value.replace(/"/g, '');
-      if (!top2.includes(indicatedId) && indicatedId !== immuneId) {
-        top2.push(indicatedId);
-      }
-    }
-
-    await formParedao(top2, week_number, eligible);
-    return res.json({ success: true, paredao: top2 });
+    // No tie — top2 + indication = 3
+    const paredaoUsers = [...new Set([sorted[0][0], sorted[1][0], indicatedId])];
+    await formParedao(paredaoUsers, week_number, counts);
+    return res.json({ success: true, paredao: paredaoUsers });
   } catch (err) {
     return res.status(500).json({ error: 'Erro interno' });
   }
