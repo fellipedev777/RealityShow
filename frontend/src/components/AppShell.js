@@ -16,7 +16,7 @@ import Avatar from '@/components/Avatar';
 export default function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination } = useStore();
+  const { user, token, setUser, setToken, logout, gameState, announcements, clearAnnouncements, setParticipants, eliminationModal, closeElimination, activeProva } = useStore();
   const socket = useSocket();
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -267,6 +267,15 @@ export default function AppShell({ children }) {
 
         {/* Main content */}
         <main className="flex-1 min-w-0 animate-fade-in">
+          {activeProva && pathname !== '/prova' && (
+            <div className="mx-4 mt-4 lg:mx-0 lg:mt-0 lg:mb-4">
+              <a href="/prova" className="flex items-center gap-3 px-4 py-3 bg-bbb-gold/20 border border-bbb-gold/50 rounded-xl text-bbb-gold font-semibold animate-pulse hover:bg-bbb-gold/30 transition-colors">
+                <span className="text-xl">🎯</span>
+                <span className="flex-1">{activeProva.title || 'Prova'} em andamento!</span>
+                <span className="text-sm font-normal">Clique para participar →</span>
+              </a>
+            </div>
+          )}
           {children}
         </main>
       </div>

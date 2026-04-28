@@ -22,6 +22,12 @@ export function useSocket() {
 
     socket.on('prova_started', (data) => {
       setActiveProva({ id: data.prova_id, type: data.type, title: data.title });
+      addAnnouncement({
+        id: Date.now().toString(),
+        content: `🎯 ${data.title || 'Prova'} começou! Vá para a página de Provas!`,
+        type: 'prova',
+        created_at: new Date().toISOString()
+      });
     });
 
     socket.on('prova_question', (data) => {

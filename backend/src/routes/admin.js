@@ -414,4 +414,62 @@ router.get('/dashboard', auth, adminOnly, async (req, res) => {
   }
 });
 
+// GET /api/admin/questions - List question bank
+router.get('/questions', auth, adminOnly, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('question_bank')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: 'Erro ao buscar perguntas' });
+    return res.json({ questions: data || [] });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// POST /api/admin/questions - Add question to bank
+router.post('/questions', auth, adminOnly, async (req, res) => {
+  try {
+    const { question_text, option_a, option_b, option_c, option_d, correct_answer } = req.body;
+    if (!question_text || !option_a || !option_b || !option_c || !option_d || !correct_answer) {
+      return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    }
+    const { data, error } = await supabase
+      .from('question_bank')
+      .insert({ question_text, option_a, option_b, option_c, option_d, correct_answer: correct_answer.toUpperCase() })
+      .select().single();
+    if (error) return res.status(500).json({ error: 'Erro ao salvar pergunta' });
+    return res.status(201).json({ question: data });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// DELETE /api/admin/questions/:id - Delete question from bank
+router.delete('/questions/:id', auth, adminOnly, async (req, res) => {
+  try {
+    await supabase.from('question_bank').delete().eq('id', req.params.id);
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// GET /api/admin/provas/history - Finished provas history
+router.get('/provas/history', auth, adminOnly, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('provas')
+      .select('id, title, type, status, started_at, ended_at, winner_id, users!winner_id(name, photo_url)')
+      .eq('status', 'finished')
+      .order('ended_at', { ascending: false })
+      .limit(20);
+    if (error) return res.status(500).json({ error: 'Erro ao buscar histórico' });
+    return res.json({ provas: data || [] });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
 module.exports = router;

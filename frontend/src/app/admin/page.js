@@ -47,6 +47,11 @@ export default function AdminPage() {
   const [publicResults, setPublicResults] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [landingCopied, setLandingCopied] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [showQuestions, setShowQuestions] = useState(false);
+  const [newQ, setNewQ] = useState({ question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 'A' });
+  const [provasHistory, setProvasHistory] = useState([]);
+  const [showProvasHistory, setShowProvasHistory] = useState(false);
   const [totalWeeks, setTotalWeeks] = useState('');
   const [realityName, setRealityName] = useState('');
   const [realityEmoji, setRealityEmoji] = useState('');
@@ -230,6 +235,31 @@ export default function AdminPage() {
     navigator.clipboard.writeText(`${window.location.origin}/temporada`);
     setLandingCopied(true);
     setTimeout(() => setLandingCopied(false), 2000);
+  };
+
+  const handleLoadQuestions = async () => {
+    const res = await action('questions', () => adminAPI.listQuestions(), '');
+    if (res?.data) setQuestions(res.data.questions);
+  };
+
+  const handleAddQuestion = async () => {
+    const { question_text, option_a, option_b, option_c, option_d, correct_answer } = newQ;
+    if (!question_text || !option_a || !option_b || !option_c || !option_d) return;
+    const res = await action('add_q', () => adminAPI.addQuestion(newQ), '✅ Pergunta adicionada!');
+    if (res?.data) {
+      setQuestions(q => [res.data.question, ...q]);
+      setNewQ({ question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 'A' });
+    }
+  };
+
+  const handleDeleteQuestion = async (id) => {
+    await action('del_q', () => adminAPI.deleteQuestion(id), '🗑️ Pergunta removida!');
+    setQuestions(q => q.filter(x => x.id !== id));
+  };
+
+  const handleLoadProvasHistory = async () => {
+    const res = await action('provas_hist', () => adminAPI.provasHistory(), '');
+    if (res?.data) setProvasHistory(res.data.provas);
   };
 
   const handleResetGame = async () => {
@@ -634,6 +664,79 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+        {/* Prova history + Question bank */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">
+          {/* Prova history */}
+          <div className="card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-bbb-gold" /> Histórico de Provas
+              </h2>
+              <button onClick={handleLoadProvasHistory} disabled={loading.provas_hist} className="btn-outline text-xs px-3 py-1.5">
+                {loading.provas_hist ? '...' : 'Carregar'}
+              </button>
+            </div>
+            {provasHistory.length > 0 ? (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {provasHistory.map(p => (
+                  <div key={p.id} className="flex items-center gap-3 p-2 bg-bbb-dark rounded-lg text-sm">
+                    <span>{p.type === 'lider' ? '👑' : '⭐'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">{p.title}</p>
+                      <p className="text-xs text-gray-500">Vencedor: {p.users?.name || '—'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-600 text-center py-2">Clique em Carregar para ver o histórico</p>
+            )}
+          </div>
+
+          {/* Question bank */}
+          <div className="card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                <Zap className="w-4 h-4 text-yellow-400" /> Banco de Perguntas
+              </h2>
+              <button onClick={() => { setShowQuestions(v => !v); if (!showQuestions && questions.length === 0) handleLoadQuestions(); }} className="btn-outline text-xs px-3 py-1.5">
+                {showQuestions ? 'Ocultar' : `Ver (${questions.length})`}
+              </button>
+            </div>
+            {/* Add question form */}
+            <div className="space-y-2 bg-bbb-dark p-3 rounded-xl">
+              <input value={newQ.question_text} onChange={e => setNewQ(q => ({ ...q, question_text: e.target.value }))} placeholder="Pergunta..." className="input text-sm" />
+              <div className="grid grid-cols-2 gap-2">
+                {['a','b','c','d'].map(opt => (
+                  <input key={opt} value={newQ[`option_${opt}`]} onChange={e => setNewQ(q => ({ ...q, [`option_${opt}`]: e.target.value }))} placeholder={`Opção ${opt.toUpperCase()}`} className="input text-sm" />
+                ))}
+              </div>
+              <div className="flex gap-2 items-center">
+                <label className="text-xs text-gray-500">Correta:</label>
+                <select value={newQ.correct_answer} onChange={e => setNewQ(q => ({ ...q, correct_answer: e.target.value }))} className="input w-20 text-sm">
+                  {['A','B','C','D'].map(o => <option key={o}>{o}</option>)}
+                </select>
+                <button onClick={handleAddQuestion} disabled={loading.add_q || !newQ.question_text} className="btn-gold flex-1 text-sm py-2">
+                  {loading.add_q ? '...' : '+ Adicionar'}
+                </button>
+              </div>
+            </div>
+            {showQuestions && (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {questions.length === 0 ? (
+                  <p className="text-xs text-gray-600 text-center py-2">Nenhuma pergunta ainda</p>
+                ) : questions.map(q => (
+                  <div key={q.id} className="flex items-start gap-2 p-2 bg-bbb-dark rounded-lg text-xs group">
+                    <p className="text-gray-300 flex-1 line-clamp-2">{q.question_text}</p>
+                    <span className="text-green-400 font-bold shrink-0">{q.correct_answer}</span>
+                    <button onClick={() => handleDeleteQuestion(q.id)} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Reset */}
         <div className="card p-5 border-red-900/40 bg-red-950/10 mt-2">
           <div className="flex items-center justify-between gap-4 flex-wrap">

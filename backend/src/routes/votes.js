@@ -27,6 +27,18 @@ router.post('/cast', auth, async (req, res) => {
       return res.status(403).json({ error: 'Votação não está aberta' });
     }
 
+    // Reject vote for immune or leader
+    const { data: protectedRows } = await supabase
+      .from('game_state').select('key, value').in('key', ['immune_user_id', 'current_leader_id']);
+    const prot = {};
+    (protectedRows || []).forEach(r => { try { prot[r.key] = JSON.parse(r.value); } catch { prot[r.key] = r.value; } });
+    if (prot.immune_user_id && prot.immune_user_id === voted_for_id) {
+      return res.status(400).json({ error: 'Este participante está imunizado' });
+    }
+    if (prot.current_leader_id && prot.current_leader_id === voted_for_id) {
+      return res.status(400).json({ error: 'O Líder não pode ser votado' });
+    }
+
     // Check if already voted
     const { data: existing } = await supabase
       .from('votes')
