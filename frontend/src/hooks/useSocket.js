@@ -95,7 +95,10 @@ export function useSocket() {
       setAnjoChoosing(false);
       updateGameState('anjo_choosing', 'false');
       updateGameState('immune_user_id', data.immune_user_id);
-      addAnnouncement({ id: Date.now().toString(), content: `🛡️ ${data.immune_user_name} foi imunizado(a) pelo Anjo!`, type: 'success', created_at: new Date().toISOString() });
+      const msg = data.reason
+        ? `🛡️ ${data.immune_user_name} foi imunizado(a) pelo Anjo! "${data.reason}"`
+        : `🛡️ ${data.immune_user_name} foi imunizado(a) pelo Anjo!`;
+      addAnnouncement({ id: Date.now().toString(), content: msg, type: 'success', created_at: new Date().toISOString() });
     });
 
     socket.on('lider_indicating_open', () => {
@@ -108,7 +111,10 @@ export function useSocket() {
       setLiderIndicating(false);
       updateGameState('lider_indicating', 'false');
       updateGameState('leader_indication', data.indicated_user_id);
-      addAnnouncement({ id: Date.now().toString(), content: `👉 O Líder indicou ${data.indicated_user_name} para o paredão!`, type: 'warning', created_at: new Date().toISOString() });
+      const msg = data.reason
+        ? `👉 O Líder indicou ${data.indicated_user_name} para o paredão! "${data.reason}"`
+        : `👉 O Líder indicou ${data.indicated_user_name} para o paredão!`;
+      addAnnouncement({ id: Date.now().toString(), content: msg, type: 'warning', created_at: new Date().toISOString() });
     });
 
     socket.on('survivor_celebration', (data) => {

@@ -110,8 +110,8 @@ export const adminAPI = {
 
 // Game actions (Angel / Leader choices)
 export const gameAPI = {
-  anjoChoose: (immune_user_id) => api.post('/game/anjo-choose', { immune_user_id }),
-  liderIndicate: (indicated_user_id) => api.post('/game/lider-indicate', { indicated_user_id }),
+  anjoChoose: (immune_user_id, reason) => api.post('/game/anjo-choose', { immune_user_id, reason }),
+  liderIndicate: (indicated_user_id, reason) => api.post('/game/lider-indicate', { indicated_user_id, reason }),
 };
 
 // Queridômetro

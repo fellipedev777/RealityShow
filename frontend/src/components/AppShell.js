@@ -22,7 +22,9 @@ export default function AppShell({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [selectedImmunize, setSelectedImmunize] = useState('');
+  const [immunizeReason, setImmunizeReason] = useState('');
   const [selectedIndicate, setSelectedIndicate] = useState('');
+  const [indicateReason, setIndicateReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   // Auth guard
@@ -176,14 +178,26 @@ export default function AppShell({ children }) {
                 </button>
               ))}
             </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Motivo da imunidade <span className="text-red-400">*</span></label>
+              <textarea
+                value={immunizeReason}
+                onChange={e => setImmunizeReason(e.target.value)}
+                placeholder="Por que você está imunizando esta pessoa?"
+                rows={3}
+                maxLength={300}
+                className="input resize-none text-sm w-full"
+              />
+            </div>
             <button
-              disabled={!selectedImmunize || actionLoading}
+              disabled={!selectedImmunize || !immunizeReason.trim() || actionLoading}
               onClick={async () => {
                 setActionLoading(true);
                 try {
-                  await gameAPI.anjoChoose(selectedImmunize);
+                  await gameAPI.anjoChoose(selectedImmunize, immunizeReason.trim());
                   setAnjoChoosing(false);
                   setSelectedImmunize('');
+                  setImmunizeReason('');
                 } catch (err) {
                   alert(err?.response?.data?.error || 'Erro ao imunizar');
                 } finally { setActionLoading(false); }
@@ -222,14 +236,26 @@ export default function AppShell({ children }) {
                 </button>
               ))}
             </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Motivo da indicação <span className="text-red-400">*</span></label>
+              <textarea
+                value={indicateReason}
+                onChange={e => setIndicateReason(e.target.value)}
+                placeholder="Por que você está indicando esta pessoa para o paredão?"
+                rows={3}
+                maxLength={300}
+                className="input resize-none text-sm w-full"
+              />
+            </div>
             <button
-              disabled={!selectedIndicate || actionLoading}
+              disabled={!selectedIndicate || !indicateReason.trim() || actionLoading}
               onClick={async () => {
                 setActionLoading(true);
                 try {
-                  await gameAPI.liderIndicate(selectedIndicate);
+                  await gameAPI.liderIndicate(selectedIndicate, indicateReason.trim());
                   setLiderIndicating(false);
                   setSelectedIndicate('');
+                  setIndicateReason('');
                 } catch (err) {
                   alert(err?.response?.data?.error || 'Erro ao indicar');
                 } finally { setActionLoading(false); }

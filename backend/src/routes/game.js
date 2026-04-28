@@ -30,7 +30,7 @@ router.post('/anjo-choose', auth, async (req, res) => {
     // Emit via io available on app
     const io = req.app.get('io');
     if (io) {
-      io.emit('anjo_chose', { immune_user_id, immune_user_name: immuneUser?.name });
+      io.emit('anjo_chose', { immune_user_id, immune_user_name: immuneUser?.name, reason: req.body.reason || '' });
     }
 
     return res.json({ success: true, immune_user: immuneUser });
@@ -69,7 +69,7 @@ router.post('/lider-indicate', auth, async (req, res) => {
 
     const io = req.app.get('io');
     if (io) {
-      io.emit('lider_indicated', { indicated_user_id, indicated_user_name: indicatedUser?.name });
+      io.emit('lider_indicated', { indicated_user_id, indicated_user_name: indicatedUser?.name, reason: req.body.reason || '' });
     }
 
     return res.json({ success: true, indicated_user: indicatedUser });
