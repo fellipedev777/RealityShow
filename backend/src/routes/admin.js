@@ -355,10 +355,8 @@ router.post('/reset-game', auth, adminOnly, async (req, res) => {
     ];
     await supabase.from('game_state').upsert(resetState, { onConflict: 'key' });
 
-    // Remove is_eliminated from all participants
-    await supabase.from('users')
-      .update({ is_eliminated: false, eliminated_at: null })
-      .eq('is_admin', false);
+    // Delete all non-admin users and their data
+    await supabase.from('users').delete().eq('is_admin', false);
 
     // Clear game data
     await Promise.all([
@@ -367,21 +365,6 @@ router.post('/reset-game', auth, adminOnly, async (req, res) => {
       supabase.from('sincerao_events').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
       supabase.from('provas').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
     ]);
-
-    // Move everyone back to sala-principal
-    const { data: mainRoom } = await supabase
-      .from('rooms').select('id').eq('slug', 'sala-principal').single();
-
-    if (mainRoom) {
-      const { data: users } = await supabase
-        .from('users').select('id').eq('is_admin', false);
-      if (users?.length) {
-        await supabase.from('room_participants').upsert(
-          users.map(u => ({ user_id: u.id, room_id: mainRoom.id })),
-          { onConflict: 'user_id' }
-        );
-      }
-    }
 
     return res.json({ success: true, message: 'Reality resetado com sucesso!' });
   } catch (err) {
